@@ -3,13 +3,14 @@ from langgraph.prebuilt import create_react_agent
 
 from .prompts.system import SYSTEM_PROMPT
 from .tools.portfolio import portfolio_analysis
+from .tools.transactions import transaction_history
 
 
 def create_agent():
     """Create a LangChain agent with Ghostfolio tools."""
     llm = ChatOpenAI(model="gpt-4o", temperature=0)
 
-    tools = [portfolio_analysis]
+    tools = [portfolio_analysis, transaction_history]
 
     agent = create_react_agent(
         model=llm,

@@ -34,6 +34,35 @@ class GhostfolioClient:
             resp.raise_for_status()
             return resp.json()
 
+    async def get_transactions(
+        self,
+        accounts: str | None = None,
+        asset_classes: str | None = None,
+        tags: str | None = None,
+        skip: int | None = None,
+        take: int | None = None,
+    ) -> dict:
+        params = {}
+        if accounts:
+            params["accounts"] = accounts
+        if asset_classes:
+            params["assetClasses"] = asset_classes
+        if tags:
+            params["tags"] = tags
+        if skip is not None:
+            params["skip"] = skip
+        if take is not None:
+            params["take"] = take
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(
+                f"{self.base_url}/api/v1/order",
+                headers=self._headers,
+                params=params,
+                timeout=30,
+            )
+            resp.raise_for_status()
+            return resp.json()
+
     async def get_portfolio_performance(
         self, range: str = "max", filters: dict | None = None
     ) -> dict:
