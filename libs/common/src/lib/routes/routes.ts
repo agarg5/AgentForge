@@ -80,6 +80,11 @@ export const internalRoutes: Record<string, InternalRoute> = {
     routerLink: ['/auth'],
     title: $localize`Sign in`
   },
+  chat: {
+    path: 'chat',
+    routerLink: ['/chat'],
+    title: $localize`Chat`
+  },
   home: {
     path: 'home',
     routerLink: ['/home'],
