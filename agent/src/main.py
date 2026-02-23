@@ -13,6 +13,9 @@ app = FastAPI(title="AgentForge", version="0.1.0")
 
 GHOSTFOLIO_BASE_URL = os.getenv("GHOSTFOLIO_BASE_URL", "http://localhost:3333")
 
+# Create agent once at startup (stateless — per-request state via config)
+agent = create_agent()
+
 
 class ChatRequest(BaseModel):
     message: str
@@ -35,10 +38,10 @@ async def chat(body: ChatRequest, authorization: str = Header()):
         raise HTTPException(status_code=401, detail="Missing auth token")
 
     client = GhostfolioClient(base_url=GHOSTFOLIO_BASE_URL, auth_token=token)
-    agent = create_agent(client)
 
     result = await agent.ainvoke(
-        {"messages": [{"role": "user", "content": body.message}]}
+        {"messages": [{"role": "user", "content": body.message}]},
+        config={"configurable": {"client": client}},
     )
 
     # Extract the final assistant message

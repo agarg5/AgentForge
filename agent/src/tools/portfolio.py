@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Optional
 
+from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import tool
 
 from ..client import GhostfolioClient
@@ -10,6 +11,8 @@ from ..client import GhostfolioClient
 @tool
 async def portfolio_analysis(
     range: Optional[str] = None,
+    *,
+    config: RunnableConfig,
 ) -> str:
     """Analyze the user's investment portfolio. Returns holdings with allocation
     percentages, total portfolio value, and performance metrics.
@@ -18,15 +21,13 @@ async def portfolio_analysis(
         range: Time range for performance data. Options: 1d, ytd, 1y, 5y, max.
                Defaults to max if not specified.
     """
-    # The client is injected via tool kwargs at invocation time
-    client: GhostfolioClient = portfolio_analysis.metadata["client"]
+    client: GhostfolioClient = config["configurable"]["client"]
     effective_range = range or "max"
 
     details = await client.get_portfolio_details(range=effective_range)
     performance = await client.get_portfolio_performance(range=effective_range)
 
     holdings = details.get("holdings", {})
-    perf = performance.get("chart", [])
     perf_summary = performance.get("performance", {})
 
     # Format holdings summary
