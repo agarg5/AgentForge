@@ -44,7 +44,10 @@ testem.log
 Thumbs.db
 
 # Project-specific
+.claude
 assignment.pdf
 pre-search.md
 pre-search.pdf
 agent/.env
+
+.claude/*
