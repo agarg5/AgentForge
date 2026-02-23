@@ -76,3 +76,26 @@ class GhostfolioClient:
             )
             resp.raise_for_status()
             return resp.json()
+
+    async def symbol_lookup(self, query: str) -> dict:
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(
+                f"{self.base_url}/api/v1/symbol/lookup",
+                headers=self._headers,
+                params={"query": query},
+                timeout=30,
+            )
+            resp.raise_for_status()
+            return resp.json()
+
+    async def get_symbol_profile(
+        self, data_source: str, symbol: str
+    ) -> dict:
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(
+                f"{self.base_url}/api/v1/symbol/{data_source}/{symbol}",
+                headers=self._headers,
+                timeout=30,
+            )
+            resp.raise_for_status()
+            return resp.json()
