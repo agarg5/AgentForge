@@ -6,10 +6,12 @@ import { permissions } from '@ghostfolio/common/permissions';
 import type { AiPromptMode, RequestWithUser } from '@ghostfolio/common/types';
 
 import {
+  Body,
   Controller,
   Get,
   Inject,
   Param,
+  Post,
   Query,
   UseGuards
 } from '@nestjs/common';
@@ -25,6 +27,17 @@ export class AiController {
     private readonly apiService: ApiService,
     @Inject(REQUEST) private readonly request: RequestWithUser
   ) {}
+
+  @Post('chat')
+  @UseGuards(AuthGuard('jwt'))
+  public async chat(
+    @Body() body: { message: string }
+  ): Promise<{ role: 'agent'; content: string }> {
+    return {
+      role: 'agent',
+      content: `[Stub] You said: "${body.message}". The AI agent is not connected yet.`
+    };
+  }
 
   @Get('prompt/:mode')
   @HasPermission(permissions.readAiPrompt)
