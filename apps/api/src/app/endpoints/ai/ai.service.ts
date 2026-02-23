@@ -7,13 +7,43 @@ import {
 import { Filter } from '@ghostfolio/common/interfaces';
 import type { AiPromptMode } from '@ghostfolio/common/types';
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { generateText } from 'ai';
 import type { ColumnDescriptor } from 'tablemark';
 
 @Injectable()
 export class AiService {
+  private readonly logger = new Logger(AiService.name);
+  private readonly agentApiUrl =
+    process.env.AGENT_API_URL ?? 'http://localhost:8000';
+
+  public async forwardToAgent({
+    authToken,
+    message
+  }: {
+    authToken: string;
+    message: string;
+  }): Promise<{ role: string; content: string }> {
+    const response = await fetch(`${this.agentApiUrl}/chat`, {
+      method: 'POST',
+      headers: {
+        Authorization: authToken,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ message })
+    });
+
+    if (!response.ok) {
+      this.logger.error(
+        `Agent API returned ${response.status}: ${response.statusText}`
+      );
+      throw new Error(`Agent API error: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
   private static readonly HOLDINGS_TABLE_COLUMN_DEFINITIONS: ({
     key:
       | 'ALLOCATION_PERCENTAGE'

@@ -42,3 +42,9 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
+
+# Project-specific
+assignment.pdf
+pre-search.md
+pre-search.pdf
+agent/.env
