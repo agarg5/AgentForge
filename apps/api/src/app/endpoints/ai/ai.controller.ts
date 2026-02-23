@@ -9,6 +9,9 @@ import {
   Body,
   Controller,
   Get,
+  Headers,
+  HttpException,
+  HttpStatus,
   Inject,
   Param,
   Post,
@@ -29,14 +32,22 @@ export class AiController {
   ) {}
 
   @Post('chat')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), HasPermissionGuard)
   public async chat(
-    @Body() body: { message: string }
-  ): Promise<{ role: 'agent'; content: string }> {
-    return {
-      role: 'agent',
-      content: `[Stub] You said: "${body.message}". The AI agent is not connected yet.`
-    };
+    @Body() body: { message: string },
+    @Headers('authorization') authorization: string
+  ) {
+    try {
+      return await this.aiService.forwardToAgent({
+        message: body.message,
+        authToken: authorization
+      });
+    } catch (error) {
+      throw new HttpException(
+        error.message ?? 'Agent unavailable',
+        error.status ?? HttpStatus.BAD_GATEWAY
+      );
+    }
   }
 
   @Get('prompt/:mode')
