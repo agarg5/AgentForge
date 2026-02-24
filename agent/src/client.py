@@ -1,4 +1,16 @@
+import logging
+
 import httpx
+
+logger = logging.getLogger("agentforge.client")
+
+
+class GhostfolioAPIError(Exception):
+    """Raised when a Ghostfolio API call fails for any reason."""
+
+    def __init__(self, message: str, status_code: int | None = None):
+        self.status_code = status_code
+        super().__init__(message)
 
 
 class GhostfolioClient:
@@ -15,6 +27,27 @@ class GhostfolioClient:
             headers={"Authorization": f"Bearer {auth_token}"},
             timeout=30,
         )
+
+    async def _request(self, method: str, path: str, **kwargs) -> httpx.Response:
+        """Make an HTTP request with unified error handling."""
+        try:
+            resp = await self._http.request(method, path, **kwargs)
+            resp.raise_for_status()
+            return resp
+        except httpx.TimeoutException:
+            logger.error("Timeout: %s %s", method, path)
+            raise GhostfolioAPIError(f"Request timed out: {method} {path}")
+        except httpx.ConnectError as e:
+            logger.error("Connection error: %s %s — %s", method, path, e)
+            raise GhostfolioAPIError(f"Cannot connect to Ghostfolio: {e}")
+        except httpx.HTTPStatusError as e:
+            logger.warning(
+                "HTTP %d: %s %s", e.response.status_code, method, path
+            )
+            raise GhostfolioAPIError(
+                f"HTTP {e.response.status_code}: {e.response.text}",
+                status_code=e.response.status_code,
+            )
 
     async def close(self):
         await self._http.aclose()
@@ -41,10 +74,7 @@ class GhostfolioClient:
         self, range: str | None = None, filters: dict | None = None
     ) -> dict:
         params = self._build_params(range, filters)
-        resp = await self._http.get(
-            "/api/v1/portfolio/details", params=params
-        )
-        resp.raise_for_status()
+        resp = await self._request("GET", "/api/v1/portfolio/details", params=params)
         return resp.json()
 
     async def get_transactions(
@@ -66,69 +96,51 @@ class GhostfolioClient:
             params["skip"] = skip
         if take is not None:
             params["take"] = take
-        resp = await self._http.get("/api/v1/order", params=params)
-        resp.raise_for_status()
+        resp = await self._request("GET", "/api/v1/order", params=params)
         return resp.json()
 
     async def get_portfolio_performance(
         self, range: str = "max", filters: dict | None = None
     ) -> dict:
         params = self._build_params(range, filters)
-        resp = await self._http.get(
-            "/api/v2/portfolio/performance", params=params
-        )
-        resp.raise_for_status()
+        resp = await self._request("GET", "/api/v2/portfolio/performance", params=params)
         return resp.json()
 
     async def symbol_lookup(self, query: str) -> dict:
-        resp = await self._http.get(
-            "/api/v1/symbol/lookup", params={"query": query}
-        )
-        resp.raise_for_status()
+        resp = await self._request("GET", "/api/v1/symbol/lookup", params={"query": query})
         return resp.json()
 
     async def get_symbol_profile(
         self, data_source: str, symbol: str
     ) -> dict:
-        resp = await self._http.get(
-            f"/api/v1/symbol/{data_source}/{symbol}"
-        )
-        resp.raise_for_status()
+        resp = await self._request("GET", f"/api/v1/symbol/{data_source}/{symbol}")
         return resp.json()
 
     async def get_portfolio_report(self) -> dict:
-        resp = await self._http.get("/api/v1/portfolio/report")
-        resp.raise_for_status()
+        resp = await self._request("GET", "/api/v1/portfolio/report")
         return resp.json()
 
     async def get_benchmarks(self) -> list:
-        resp = await self._http.get("/api/v1/benchmarks")
-        resp.raise_for_status()
+        resp = await self._request("GET", "/api/v1/benchmarks")
         return resp.json()
 
     async def get_dividends(
         self, range: str = "max", filters: dict | None = None
     ) -> dict:
         params = self._build_params(range, filters)
-        resp = await self._http.get(
-            "/api/v1/portfolio/dividends", params=params
-        )
-        resp.raise_for_status()
+        resp = await self._request("GET", "/api/v1/portfolio/dividends", params=params)
         return resp.json()
 
     async def get_accounts(self) -> dict:
-        resp = await self._http.get("/api/v1/account")
-        resp.raise_for_status()
+        resp = await self._request("GET", "/api/v1/account")
         return resp.json()
 
     async def create_order(self, order_data: dict) -> dict:
-        resp = await self._http.post("/api/v1/order", json=order_data)
-        resp.raise_for_status()
+        resp = await self._request("POST", "/api/v1/order", json=order_data)
         return resp.json()
 
     async def delete_order(self, order_id: str) -> dict:
-        resp = await self._http.delete(f"/api/v1/order/{order_id}")
-        resp.raise_for_status()
+        resp = await self._request("DELETE", f"/api/v1/order/{order_id}")
         if resp.status_code == 204:
             return {}
         return resp.json()

@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-import httpx
 from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import tool
 
-from ..client import GhostfolioClient
+from ..client import GhostfolioAPIError, GhostfolioClient
 
 
 @tool
@@ -21,8 +20,8 @@ async def account_summary(
 
     try:
         data = await client.get_accounts()
-    except httpx.HTTPStatusError as e:
-        return f"Error fetching accounts: {e.response.status_code} — {e.response.text}"
+    except GhostfolioAPIError as e:
+        return f"Error fetching accounts: {e}"
     accounts = data.get("accounts", []) if isinstance(data, dict) else data
 
     if not accounts:

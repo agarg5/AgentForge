@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-import httpx
-
-from ..client import GhostfolioClient
+from ..client import GhostfolioAPIError, GhostfolioClient
 
 
 async def verify_ticker(
@@ -27,17 +25,15 @@ async def verify_ticker(
         profile = await client.get_symbol_profile(data_source, symbol)
         if profile and profile.get("symbol"):
             return True, ""
-    except httpx.HTTPStatusError as e:
-        if e.response.status_code != 404:
-            return False, f"Error verifying symbol: {e.response.status_code}"
+    except GhostfolioAPIError as e:
+        if e.status_code != 404:
+            return False, f"Error verifying symbol: {e.status_code}"
         # 404 → symbol not found via profile, try search
-    except httpx.HTTPError:
-        pass  # Connection/timeout error → fall through to search
 
     # 2. Fallback: search to see if the symbol exists under a different source
     try:
         results = await client.symbol_lookup(symbol)
-    except httpx.HTTPError:
+    except GhostfolioAPIError:
         # If search also fails, we can't verify — allow through with warning
         return True, ""
 

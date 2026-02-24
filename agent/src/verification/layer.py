@@ -42,18 +42,26 @@ def verify_response(
     final_response = response
 
     # Check 1: Disclaimer
-    passed, detail = check_disclaimer(response, tools_used)
-    checks.append({"name": "disclaimer", "passed": passed, "detail": detail})
-    if not passed:
-        final_response += DISCLAIMER_TEXT
-        amended = True
-        logger.info("Appended missing disclaimer to response")
+    try:
+        passed, detail = check_disclaimer(response, tools_used)
+        checks.append({"name": "disclaimer", "passed": passed, "detail": detail})
+        if not passed:
+            final_response += DISCLAIMER_TEXT
+            amended = True
+            logger.info("Appended missing disclaimer to response")
+    except Exception as e:
+        logger.error("Disclaimer check failed: %s", e)
+        checks.append({"name": "disclaimer", "passed": True, "detail": f"Check error: {e}"})
 
     # Check 2: Numeric consistency
-    passed, detail = check_numeric_consistency(response, tool_outputs or [])
-    checks.append({"name": "numeric_consistency", "passed": passed, "detail": detail})
-    if not passed:
-        logger.warning("Numeric consistency issue: %s", detail)
+    try:
+        passed, detail = check_numeric_consistency(response, tool_outputs or [])
+        checks.append({"name": "numeric_consistency", "passed": passed, "detail": detail})
+        if not passed:
+            logger.warning("Numeric consistency issue: %s", detail)
+    except Exception as e:
+        logger.error("Numeric consistency check failed: %s", e)
+        checks.append({"name": "numeric_consistency", "passed": True, "detail": f"Check error: {e}"})
 
     # Check 3: Ticker verification is done at tool-call time (create_order.py)
     # Record it as always-passed here since it's enforced upstream

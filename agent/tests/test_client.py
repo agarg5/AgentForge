@@ -4,7 +4,7 @@ import httpx
 import pytest
 import respx
 
-from src.client import GhostfolioClient
+from src.client import GhostfolioAPIError, GhostfolioClient
 
 BASE_URL = "http://ghostfolio.test"
 AUTH_TOKEN = "test-token-123"
@@ -71,9 +71,9 @@ async def test_get_symbol_profile_404(mock_api, client):
     mock_api.get("/api/v1/symbol/YAHOO/FAKE").mock(
         return_value=httpx.Response(404, json={"message": "Not found"})
     )
-    with pytest.raises(httpx.HTTPStatusError) as exc_info:
+    with pytest.raises(GhostfolioAPIError) as exc_info:
         await client.get_symbol_profile("YAHOO", "FAKE")
-    assert exc_info.value.response.status_code == 404
+    assert exc_info.value.status_code == 404
 
 
 @pytest.mark.asyncio
@@ -108,5 +108,6 @@ async def test_raises_on_server_error(mock_api, client):
     mock_api.get("/api/v1/account").mock(
         return_value=httpx.Response(500, text="Internal Server Error")
     )
-    with pytest.raises(httpx.HTTPStatusError):
+    with pytest.raises(GhostfolioAPIError) as exc_info:
         await client.get_accounts()
+    assert exc_info.value.status_code == 500

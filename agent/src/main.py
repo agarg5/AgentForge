@@ -109,12 +109,22 @@ async def chat(body: ChatRequest, authorization: str = Header()):
     }
 
     start_time = time.monotonic()
+    run_id = run_config.get("run_id")
 
-    async with GhostfolioClient(base_url=GHOSTFOLIO_BASE_URL, auth_token=token) as client:
-        run_config["configurable"]["client"] = client
-        result = await agent.ainvoke(
-            {"messages": messages},
-            config=run_config,
+    try:
+        async with GhostfolioClient(base_url=GHOSTFOLIO_BASE_URL, auth_token=token) as client:
+            run_config["configurable"]["client"] = client
+            result = await agent.ainvoke(
+                {"messages": messages},
+                config=run_config,
+            )
+    except Exception as e:
+        elapsed = time.monotonic() - start_time
+        logger.error("Agent error run_id=%s latency=%.2fs: %s", run_id, elapsed, e)
+        return ChatResponse(
+            content="I'm sorry, I encountered an error processing your request. Please try again.",
+            run_id=run_id,
+            metrics={"error": str(e), "latency_seconds": round(elapsed, 3)},
         )
 
     elapsed = time.monotonic() - start_time
@@ -126,7 +136,6 @@ async def chat(body: ChatRequest, authorization: str = Header()):
         input_tokens=metrics["input_tokens"],
         output_tokens=metrics["output_tokens"],
     )
-    run_id = run_config.get("run_id")
 
     logger.info(
         "chat run_id=%s latency=%.2fs tokens=%d tools=%d",
@@ -146,7 +155,7 @@ async def chat(body: ChatRequest, authorization: str = Header()):
 
     for msg in reversed(result_messages):
         if hasattr(msg, "content") and msg.type == "ai" and msg.content:
-            # Run verification layer
+            # Run verification layer (safe — won't crash the response)
             verification = verify_response(
                 response=msg.content,
                 tools_used=metrics.get("tools_used", []),

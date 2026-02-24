@@ -2,11 +2,10 @@ from __future__ import annotations
 
 from typing import Optional
 
-import httpx
 from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import tool
 
-from ..client import GhostfolioClient
+from ..client import GhostfolioAPIError, GhostfolioClient
 
 
 @tool
@@ -28,8 +27,8 @@ async def portfolio_analysis(
     try:
         details = await client.get_portfolio_details(range=effective_range)
         performance = await client.get_portfolio_performance(range=effective_range)
-    except httpx.HTTPStatusError as e:
-        return f"Error fetching portfolio data: {e.response.status_code} — {e.response.text}"
+    except GhostfolioAPIError as e:
+        return f"Error fetching portfolio data: {e}"
 
     holdings = details.get("holdings", {})
     perf_summary = performance.get("performance", {})

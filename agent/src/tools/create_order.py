@@ -2,11 +2,10 @@ from __future__ import annotations
 
 from typing import Optional
 
-import httpx
 from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import tool
 
-from ..client import GhostfolioClient
+from ..client import GhostfolioAPIError, GhostfolioClient
 from ..verification import verify_ticker
 
 VALID_ORDER_TYPES = ("BUY", "SELL", "DIVIDEND", "FEE", "INTEREST", "LIABILITY")
@@ -69,8 +68,8 @@ async def create_order(
 
     try:
         result = await client.create_order(order_data)
-    except httpx.HTTPStatusError as e:
-        return f"Error creating order: {e.response.status_code} — {e.response.text}"
+    except GhostfolioAPIError as e:
+        return f"Error creating order: {e}"
 
     order_id = result.get("id", "N/A")
     return (

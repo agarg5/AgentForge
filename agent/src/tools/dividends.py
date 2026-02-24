@@ -2,11 +2,10 @@ from __future__ import annotations
 
 from typing import Optional
 
-import httpx
 from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import tool
 
-from ..client import GhostfolioClient
+from ..client import GhostfolioAPIError, GhostfolioClient
 
 
 @tool
@@ -27,8 +26,8 @@ async def dividend_analysis(
 
     try:
         data = await client.get_dividends(range=effective_range)
-    except httpx.HTTPStatusError as e:
-        return f"Error fetching dividend data: {e.response.status_code} — {e.response.text}"
+    except GhostfolioAPIError as e:
+        return f"Error fetching dividend data: {e}"
     dividends = data.get("dividends", [])
 
     if not dividends:
