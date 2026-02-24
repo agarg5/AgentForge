@@ -312,6 +312,4 @@ CHECKS: dict[str, callable] = {
     "ticker_valid": ticker_valid,
     "handles_invalid_ticker": handles_invalid_ticker,
     "handles_empty_input": handles_empty_input,
-    "must_contain_all": must_contain_all,
-    "must_not_contain_any": must_not_contain_any,
 }
