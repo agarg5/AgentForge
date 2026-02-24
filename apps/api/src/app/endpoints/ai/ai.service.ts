@@ -46,6 +46,50 @@ export class AiService {
     return response.json();
   }
 
+  public async getChatHistory({
+    authToken
+  }: {
+    authToken: string;
+  }): Promise<{ history: { role: string; content: string }[] }> {
+    const response = await fetch(`${this.agentApiUrl}/chat/history`, {
+      method: 'GET',
+      headers: {
+        Authorization: authToken
+      }
+    });
+
+    if (!response.ok) {
+      this.logger.error(
+        `Agent API returned ${response.status}: ${response.statusText}`
+      );
+      throw new Error(`Agent API error: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
+  public async clearChatHistory({
+    authToken
+  }: {
+    authToken: string;
+  }): Promise<{ status: string }> {
+    const response = await fetch(`${this.agentApiUrl}/chat/history`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: authToken
+      }
+    });
+
+    if (!response.ok) {
+      this.logger.error(
+        `Agent API returned ${response.status}: ${response.statusText}`
+      );
+      throw new Error(`Agent API error: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
   private static readonly HOLDINGS_TABLE_COLUMN_DEFINITIONS: ({
     key:
       | 'ALLOCATION_PERCENTAGE'

@@ -7,6 +7,7 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
+  OnInit,
   ViewChild
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -40,10 +41,11 @@ interface ChatMessage {
   styleUrls: ['./chat-page.scss'],
   templateUrl: './chat-page.html'
 })
-export class GfChatPageComponent implements AfterViewChecked {
+export class GfChatPageComponent implements AfterViewChecked, OnInit {
   @ViewChild('messagesContainer') private messagesContainer: ElementRef;
 
   public isLoading = false;
+  public isLoadingHistory = true;
   public messageInput = '';
   public messages: ChatMessage[] = [];
 
@@ -56,11 +58,44 @@ export class GfChatPageComponent implements AfterViewChecked {
     marked.setOptions({ breaks: true });
   }
 
+  public ngOnInit() {
+    this.dataService.getChatHistory().subscribe({
+      next: (response) => {
+        this.messages = response.history.map((msg) => ({
+          content: msg.content,
+          contentHtml:
+            msg.role === 'agent'
+              ? (marked.parse(msg.content) as string)
+              : undefined,
+          role: msg.role as 'user' | 'agent',
+          timestamp: new Date()
+        }));
+
+        this.isLoadingHistory = false;
+        this.shouldScrollToBottom = true;
+        this.changeDetectorRef.markForCheck();
+      },
+      error: () => {
+        this.isLoadingHistory = false;
+        this.changeDetectorRef.markForCheck();
+      }
+    });
+  }
+
   public ngAfterViewChecked() {
     if (this.shouldScrollToBottom) {
       this.scrollToBottom();
       this.shouldScrollToBottom = false;
     }
+  }
+
+  public onClearChat() {
+    this.dataService.clearChatHistory().subscribe({
+      next: () => {
+        this.messages = [];
+        this.changeDetectorRef.markForCheck();
+      }
+    });
   }
 
   public onSendMessage() {
@@ -81,12 +116,7 @@ export class GfChatPageComponent implements AfterViewChecked {
     this.shouldScrollToBottom = true;
     this.changeDetectorRef.markForCheck();
 
-    const history = this.messages.slice(0, -1).map(({ content: c, role }) => ({
-      content: c,
-      role
-    }));
-
-    this.dataService.sendChatMessage({ history, message: content }).subscribe({
+    this.dataService.sendChatMessage({ message: content }).subscribe({
       next: (response) => {
         this.messages.push({
           content: response.content,

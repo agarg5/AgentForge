@@ -840,17 +840,21 @@ export class DataService {
     });
   }
 
-  public sendChatMessage({
-    history,
-    message
-  }: {
-    history?: { role: string; content: string }[];
-    message: string;
-  }) {
+  public sendChatMessage({ message }: { message: string }) {
     return this.http.post<{ role: 'agent'; content: string }>(
       '/api/v1/ai/chat',
-      { history, message }
+      { message }
     );
+  }
+
+  public getChatHistory() {
+    return this.http.get<{
+      history: { role: string; content: string }[];
+    }>('/api/v1/ai/chat/history');
+  }
+
+  public clearChatHistory() {
+    return this.http.delete('/api/v1/ai/chat/history');
   }
 
   public transferAccountBalance({

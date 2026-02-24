@@ -10,7 +10,7 @@ from pydantic import BaseModel
 
 from .agent import create_agent
 from .client import GhostfolioClient
-from .memory import MemoryStore
+from .memory import ChatHistoryStore, MemoryStore
 from .observability import calculate_cost, configure_tracing, extract_metrics, get_run_config
 from .verification import verify_response
 
@@ -43,6 +43,7 @@ else:
     logger.info("REDIS_URL not set — using in-memory memory store")
 
 memory_store = MemoryStore(redis_client=_redis_client)
+chat_history_store = ChatHistoryStore(redis_client=_redis_client)
 
 # Check LangSmith tracing on startup
 tracing_active = configure_tracing()
@@ -73,28 +74,44 @@ class FeedbackRequest(BaseModel):
     comment: Optional[str] = None
 
 
+def _extract_token(authorization: str) -> str:
+    """Extract and validate the auth token from the Authorization header."""
+    token = authorization.removeprefix("Bearer ").strip()
+    if not token:
+        raise HTTPException(status_code=401, detail="Missing auth token")
+    return token
+
+
 @app.get("/health")
 async def health():
     return {
         "status": "ok",
         "tracing": tracing_active,
         "memory": "redis" if memory_store.is_persistent else "in-memory",
+        "chat_history": "redis" if chat_history_store.is_persistent else "in-memory",
     }
 
 
 @app.post("/chat", response_model=ChatResponse)
 async def chat(body: ChatRequest, authorization: str = Header()):
-    token = authorization.removeprefix("Bearer ").strip()
-    if not token:
-        raise HTTPException(status_code=401, detail="Missing auth token")
+    token = _extract_token(authorization)
 
-    # Build message history for multi-turn conversation
+    # Load persisted history if the frontend didn't send any
     messages = []
-    for msg in body.history or []:
-        if msg.role == "user":
-            messages.append(HumanMessage(content=msg.content))
-        elif msg.role in ("agent", "assistant"):
-            messages.append(AIMessage(content=msg.content))
+    if body.history:
+        for msg in body.history:
+            if msg.role == "user":
+                messages.append(HumanMessage(content=msg.content))
+            elif msg.role in ("agent", "assistant"):
+                messages.append(AIMessage(content=msg.content))
+    else:
+        stored_history = await chat_history_store.get_history(token)
+        for msg in stored_history:
+            if msg["role"] == "user":
+                messages.append(HumanMessage(content=msg["content"]))
+            elif msg["role"] in ("agent", "assistant"):
+                messages.append(AIMessage(content=msg["content"]))
+
     messages.append(HumanMessage(content=body.message))
 
     # Build LangSmith run config with tracing metadata
@@ -163,8 +180,14 @@ async def chat(body: ChatRequest, authorization: str = Header()):
             )
             metrics["verification"] = verification["checks"]
 
+            response_content = verification["response"]
+
+            # Persist both messages to chat history
+            await chat_history_store.append_message(token, "user", body.message)
+            await chat_history_store.append_message(token, "agent", response_content)
+
             return ChatResponse(
-                content=verification["response"],
+                content=response_content,
                 run_id=run_id,
                 metrics=metrics,
             )
@@ -174,6 +197,22 @@ async def chat(body: ChatRequest, authorization: str = Header()):
         run_id=run_id,
         metrics=metrics,
     )
+
+
+@app.get("/chat/history")
+async def get_chat_history(authorization: str = Header()):
+    """Return the stored chat history for the current user."""
+    token = _extract_token(authorization)
+    history = await chat_history_store.get_history(token)
+    return {"history": history}
+
+
+@app.delete("/chat/history")
+async def clear_chat_history(authorization: str = Header()):
+    """Clear the stored chat history for the current user."""
+    token = _extract_token(authorization)
+    await chat_history_store.clear_history(token)
+    return {"status": "ok"}
 
 
 @app.post("/feedback")
