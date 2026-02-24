@@ -34,7 +34,8 @@ export class AiController {
   @Post('chat')
   @UseGuards(AuthGuard('jwt'), HasPermissionGuard)
   public async chat(
-    @Body() body: { message: string; history?: { role: string; content: string }[] },
+    @Body()
+    body: { message: string; history?: { role: string; content: string }[] },
     @Headers('authorization') authorization: string
   ) {
     try {
