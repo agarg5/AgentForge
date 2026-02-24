@@ -26,9 +26,9 @@ async def verify_ticker(
         if profile and profile.get("symbol"):
             return True, ""
     except GhostfolioAPIError as e:
-        if e.status_code != 404:
+        if e.status_code not in (None, 404):
             return False, f"Error verifying symbol: {e.status_code}"
-        # 404 → symbol not found via profile, try search
+        # 404 or connection/timeout → fall through to search
 
     # 2. Fallback: search to see if the symbol exists under a different source
     try:
