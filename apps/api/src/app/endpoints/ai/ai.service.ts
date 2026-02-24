@@ -20,9 +20,11 @@ export class AiService {
 
   public async forwardToAgent({
     authToken,
+    history,
     message
   }: {
     authToken: string;
+    history?: { role: string; content: string }[];
     message: string;
   }): Promise<{ role: string; content: string }> {
     const response = await fetch(`${this.agentApiUrl}/chat`, {
@@ -31,7 +33,7 @@ export class AiService {
         Authorization: authToken,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ message })
+      body: JSON.stringify({ history, message })
     });
 
     if (!response.ok) {

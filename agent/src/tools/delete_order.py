@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import httpx
 from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import tool
 
@@ -25,7 +26,15 @@ async def delete_order(
     if not order_id or not order_id.strip():
         return "Error: order_id is required."
 
-    result = await client.delete_order(order_id.strip())
+    try:
+        result = await client.delete_order(order_id.strip())
+    except httpx.HTTPStatusError as e:
+        if e.response.status_code == 404:
+            return f"Error: order '{order_id}' not found."
+        return f"Error deleting order: {e.response.status_code} — {e.response.text}"
+
+    if not result:
+        return f"Order `{order_id}` deleted successfully."
 
     symbol = result.get("SymbolProfile", {}).get("symbol", "") or result.get("symbol", "N/A")
     order_type = result.get("type", "N/A")

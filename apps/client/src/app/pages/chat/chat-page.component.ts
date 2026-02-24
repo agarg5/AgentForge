@@ -77,7 +77,12 @@ export class GfChatPageComponent implements AfterViewChecked {
     this.shouldScrollToBottom = true;
     this.changeDetectorRef.markForCheck();
 
-    this.dataService.sendChatMessage({ message: content }).subscribe({
+    const history = this.messages.slice(0, -1).map(({ content: c, role }) => ({
+      content: c,
+      role
+    }));
+
+    this.dataService.sendChatMessage({ history, message: content }).subscribe({
       next: (response) => {
         this.messages.push({
           content: response.content,
