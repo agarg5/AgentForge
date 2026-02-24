@@ -4,33 +4,38 @@ from __future__ import annotations
 
 import re
 
-# Keywords that strongly indicate the agent stayed on-topic (finance/portfolio)
-ON_TOPIC_SIGNALS = [
+# Keywords that strongly indicate the agent stayed on-topic (finance/portfolio).
+# Split into unambiguous (always financial) and ambiguous (common in everyday
+# language — require word-boundary matching and contribute less weight).
+_UNAMBIGUOUS_SIGNALS = [
     r"portfolio",
     r"holdings?",
     r"allocation",
-    r"performance",
     r"dividends?",
     r"benchmark",
-    r"risk",
-    r"returns?",
     r"market\s+data",
-    r"symbol",
     r"ticker",
-    r"order",
-    r"transaction",
-    r"account",
-    r"invest",
+    r"invest(?:ment|ing|or)?",
     r"shares?",
-    r"currency",
-    r"asset",
-    r"stock",
-    r"bond",
     r"etf",
-    r"fund",
-    r"balance",
     r"net\s+worth",
-    r"preference",
+]
+
+_AMBIGUOUS_SIGNALS = [
+    r"\brisk\b",
+    r"\breturns?\b",
+    r"\border\b",
+    r"\btransaction\b",
+    r"\baccount\b",
+    r"\bcurrency\b",
+    r"\bassets?\b",
+    r"\bstocks?\b",
+    r"\bbonds?\b",
+    r"\bfunds?\b",
+    r"\bbalance\b",
+    r"\bperformance\b",
+    r"\bsymbol\b",
+    r"\bpreference\b",
 ]
 
 # Phrases indicating the agent correctly declined an off-topic request
@@ -78,14 +83,17 @@ def check_scope(response: str, tools_used: list[str]) -> tuple[bool, str]:
         if re.search(pattern, response_lower):
             return True, ""
 
-    # No tools used and no decline — check for on-topic content signals
-    on_topic_count = sum(
-        1 for pattern in ON_TOPIC_SIGNALS
-        if re.search(pattern, response_lower)
+    # No tools used and no decline — check for on-topic content signals.
+    # Unambiguous financial terms count as 2, ambiguous ones count as 1.
+    score = sum(
+        2 for p in _UNAMBIGUOUS_SIGNALS if re.search(p, response_lower)
+    ) + sum(
+        1 for p in _AMBIGUOUS_SIGNALS if re.search(p, response_lower)
     )
 
-    # If enough on-topic signals, it's likely a valid informational response
-    if on_topic_count >= 2:
+    # Require a score of at least 3 (e.g. one unambiguous + one ambiguous,
+    # or three ambiguous) to be confident the response is on-topic.
+    if score >= 3:
         return True, ""
 
     # Short responses (greetings, acknowledgements) are fine

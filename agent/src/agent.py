@@ -50,4 +50,4 @@ def create_agent():
         prompt=SYSTEM_PROMPT,
     )
 
-    return agent, MAX_AGENT_STEPS
+    return agent

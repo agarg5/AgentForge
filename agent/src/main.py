@@ -10,7 +10,7 @@ from pydantic import BaseModel
 
 from langgraph.errors import GraphRecursionError
 
-from .agent import create_agent
+from .agent import MAX_AGENT_STEPS, create_agent
 from .client import GhostfolioClient
 from .memory import ChatHistoryStore, MemoryStore
 from .observability import calculate_cost, configure_tracing, extract_metrics, get_run_config
@@ -27,7 +27,7 @@ GHOSTFOLIO_BASE_URL = os.getenv("GHOSTFOLIO_BASE_URL", "http://localhost:3333")
 REDIS_URL = os.getenv("REDIS_URL")
 
 # Create agent once at startup (stateless — per-request state via config)
-agent, max_agent_steps = create_agent()
+agent = create_agent()
 
 # Initialize persistent memory store
 _redis_client = None
@@ -127,7 +127,7 @@ async def chat(body: ChatRequest, authorization: str = Header()):
         "auth_token": token,
     }
     # Prevent runaway tool-call loops by capping the number of LangGraph steps
-    run_config["recursion_limit"] = max_agent_steps
+    run_config["recursion_limit"] = MAX_AGENT_STEPS
 
     start_time = time.monotonic()
     run_id = run_config.get("run_id")
