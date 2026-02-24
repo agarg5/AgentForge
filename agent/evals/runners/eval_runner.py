@@ -264,8 +264,13 @@ async def run_eval(
     auth_token: str,
     category: str | None = None,
     concurrency: int = 3,
+    delay: float = 0.0,
 ) -> EvalReport:
-    """Run the full evaluation suite."""
+    """Run the full evaluation suite.
+
+    Args:
+        delay: Seconds to wait between requests (helps with rate limits).
+    """
     cases = load_cases(category)
     report = EvalReport(total=len(cases))
 
@@ -275,7 +280,10 @@ async def run_eval(
 
         async def bounded_run(case: dict) -> CaseResult:
             async with semaphore:
-                return await run_single_case(client, base_url, auth_token, case)
+                result = await run_single_case(client, base_url, auth_token, case)
+                if delay > 0:
+                    await asyncio.sleep(delay)
+                return result
 
         tasks = [bounded_run(case) for case in cases]
         results = await asyncio.gather(*tasks)
