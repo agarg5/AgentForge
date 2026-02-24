@@ -11,6 +11,7 @@ from pydantic import BaseModel
 from .agent import create_agent
 from .client import GhostfolioClient
 from .observability import configure_tracing, extract_metrics, get_run_config
+from .verification import verify_response
 
 load_dotenv()
 
@@ -105,12 +106,26 @@ async def chat(body: ChatRequest, authorization: str = Header()):
         metrics["tool_call_count"],
     )
 
-    # Extract the final assistant message
+    # Extract the final assistant message and tool outputs
     result_messages = result.get("messages", [])
+    tool_outputs = [
+        msg.content
+        for msg in result_messages
+        if msg.type == "tool" and isinstance(msg.content, str)
+    ]
+
     for msg in reversed(result_messages):
         if hasattr(msg, "content") and msg.type == "ai" and msg.content:
+            # Run verification layer
+            verification = verify_response(
+                response=msg.content,
+                tools_used=metrics.get("tools_used", []),
+                tool_outputs=tool_outputs,
+            )
+            metrics["verification"] = verification["checks"]
+
             return ChatResponse(
-                content=msg.content,
+                content=verification["response"],
                 run_id=run_id,
                 metrics=metrics,
             )
