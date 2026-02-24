@@ -2,11 +2,10 @@ from __future__ import annotations
 
 from typing import Optional
 
-import httpx
 from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import tool
 
-from ..client import GhostfolioClient
+from ..client import GhostfolioAPIError, GhostfolioClient
 
 
 @tool
@@ -31,16 +30,16 @@ async def market_data(
     try:
         profile = await client.get_symbol_profile(source, query.upper())
         return _format_profile(profile)
-    except httpx.HTTPStatusError as e:
-        if e.response.status_code != 404:
-            return f"Error fetching market data: {e.response.status_code} — {e.response.text}"
+    except GhostfolioAPIError as e:
+        if e.status_code != 404:
+            return f"Error fetching market data: {e}"
         # 404 means symbol not found — fall through to search
 
     # Fallback: run a symbol search
     try:
         results = await client.symbol_lookup(query)
-    except httpx.HTTPStatusError as e:
-        return f"Error searching for symbol: {e.response.status_code} — {e.response.text}"
+    except GhostfolioAPIError as e:
+        return f"Error searching for symbol: {e}"
 
     items = results.get("items", [])
 

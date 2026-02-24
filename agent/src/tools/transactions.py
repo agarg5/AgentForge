@@ -2,11 +2,10 @@ from __future__ import annotations
 
 from typing import Optional
 
-import httpx
 from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import tool
 
-from ..client import GhostfolioClient
+from ..client import GhostfolioAPIError, GhostfolioClient
 
 
 @tool
@@ -33,8 +32,8 @@ async def transaction_history(
             asset_classes=asset_classes,
             take=take,
         )
-    except httpx.HTTPStatusError as e:
-        return f"Error fetching transactions: {e.response.status_code} — {e.response.text}"
+    except GhostfolioAPIError as e:
+        return f"Error fetching transactions: {e}"
 
     activities = data.get("activities", [])
 
