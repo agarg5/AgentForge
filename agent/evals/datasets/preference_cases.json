@@ -1,0 +1,200 @@
+[
+  {
+    "id": "pref-save-001",
+    "category": "preferences",
+    "input": "Remember that I prefer EUR as my currency",
+    "expected_tools": ["save_user_preference"],
+    "checks": ["tool_called", "no_hallucination"],
+    "expected_patterns": ["saved|remember|noted|EUR|preference"],
+    "description": "Save a currency preference"
+  },
+  {
+    "id": "pref-save-002",
+    "category": "preferences",
+    "input": "My risk tolerance is low, please remember that",
+    "expected_tools": ["save_user_preference"],
+    "checks": ["tool_called", "no_hallucination"],
+    "expected_patterns": ["saved|remember|noted|low|risk"],
+    "description": "Save a risk tolerance preference"
+  },
+  {
+    "id": "pref-save-003",
+    "category": "preferences",
+    "input": "I always want to see data in tables, remember that for next time",
+    "expected_tools": ["save_user_preference"],
+    "checks": ["tool_called", "no_hallucination"],
+    "expected_patterns": ["saved|remember|noted|table"],
+    "description": "Save a display format preference"
+  },
+  {
+    "id": "pref-save-004",
+    "category": "preferences",
+    "input": "Please remember that my favorite stocks to track are AAPL, MSFT, and GOOGL",
+    "expected_tools": ["save_user_preference"],
+    "checks": ["tool_called", "no_hallucination"],
+    "expected_patterns": ["saved|remember|noted|AAPL|MSFT|GOOGL"],
+    "description": "Save favorite symbols preference"
+  },
+  {
+    "id": "pref-save-005",
+    "category": "preferences",
+    "input": "My investment goal is long-term retirement savings, keep that in mind",
+    "expected_tools": ["save_user_preference"],
+    "checks": ["tool_called", "no_hallucination"],
+    "expected_patterns": ["saved|remember|noted|retirement|goal"],
+    "description": "Save investment goal preference"
+  },
+  {
+    "id": "pref-get-001",
+    "category": "preferences",
+    "input": "What preferences do you have saved for me?",
+    "expected_tools": ["get_user_preferences"],
+    "checks": ["tool_called", "no_hallucination"],
+    "expected_patterns": ["preference|saved|setting"],
+    "description": "Retrieve all saved preferences"
+  },
+  {
+    "id": "pref-get-002",
+    "category": "preferences",
+    "input": "What currency do I prefer?",
+    "expected_tools": ["get_user_preferences"],
+    "checks": ["tool_called", "no_hallucination"],
+    "expected_patterns": ["preference|currency|saved|no preference"],
+    "description": "Retrieve a specific currency preference"
+  },
+  {
+    "id": "pref-get-003",
+    "category": "preferences",
+    "input": "Do you remember my risk tolerance?",
+    "expected_tools": ["get_user_preferences"],
+    "checks": ["tool_called", "no_hallucination"],
+    "expected_patterns": ["risk|tolerance|preference|no preference|saved"],
+    "description": "Retrieve a specific risk tolerance preference"
+  },
+  {
+    "id": "pref-get-004",
+    "category": "preferences",
+    "input": "What do you know about my settings?",
+    "expected_tools": ["get_user_preferences"],
+    "checks": ["tool_called", "no_hallucination"],
+    "expected_patterns": ["preference|setting|saved|no preference"],
+    "description": "Retrieve preferences using alternate wording"
+  },
+  {
+    "id": "pref-delete-001",
+    "category": "preferences",
+    "input": "Forget my currency preference",
+    "expected_tools": ["delete_user_preference"],
+    "checks": ["tool_called", "no_hallucination"],
+    "expected_patterns": ["deleted|removed|forgotten|cleared|currency"],
+    "description": "Delete a specific preference"
+  },
+  {
+    "id": "pref-delete-002",
+    "category": "preferences",
+    "input": "Remove my risk tolerance setting",
+    "expected_tools": ["delete_user_preference"],
+    "checks": ["tool_called", "no_hallucination"],
+    "expected_patterns": ["deleted|removed|cleared|risk"],
+    "description": "Delete risk tolerance preference"
+  },
+  {
+    "id": "pref-delete-003",
+    "category": "preferences",
+    "input": "I don't want you to remember my display format anymore",
+    "expected_tools": ["delete_user_preference"],
+    "checks": ["tool_called", "no_hallucination"],
+    "expected_patterns": ["deleted|removed|forgotten|cleared|display|format"],
+    "description": "Delete preference with natural language phrasing"
+  },
+  {
+    "id": "pref-overwrite-001",
+    "category": "preferences",
+    "input": "Actually, change my preferred currency to GBP instead",
+    "expected_tools": ["save_user_preference"],
+    "checks": ["tool_called", "no_hallucination"],
+    "expected_patterns": ["saved|updated|changed|GBP"],
+    "description": "Overwrite an existing currency preference"
+  },
+  {
+    "id": "pref-overwrite-002",
+    "category": "preferences",
+    "input": "Update my risk tolerance to high",
+    "expected_tools": ["save_user_preference"],
+    "checks": ["tool_called", "no_hallucination"],
+    "expected_patterns": ["saved|updated|changed|high|risk"],
+    "description": "Overwrite an existing risk tolerance preference"
+  },
+  {
+    "id": "pref-overwrite-003",
+    "category": "preferences",
+    "input": "I changed my mind, I prefer brief summaries instead of tables",
+    "expected_tools": ["save_user_preference"],
+    "checks": ["tool_called", "no_hallucination"],
+    "expected_patterns": ["saved|updated|changed|brief"],
+    "description": "Overwrite display format preference"
+  },
+  {
+    "id": "pref-influence-001",
+    "category": "preferences_influence",
+    "input": "Show me my portfolio value",
+    "expected_tools": ["get_user_preferences", "portfolio_analysis"],
+    "checks": ["multi_tool_called", "no_hallucination"],
+    "expected_patterns": ["Portfolio|Value|\\d+"],
+    "description": "Agent checks preferences before answering a portfolio query"
+  },
+  {
+    "id": "pref-influence-002",
+    "category": "preferences_influence",
+    "input": "How are my investments doing?",
+    "expected_tools": ["get_user_preferences", "portfolio_analysis"],
+    "checks": ["multi_tool_called", "no_hallucination"],
+    "expected_patterns": ["Portfolio|Performance|%|\\d+"],
+    "description": "Agent proactively loads preferences at conversation start"
+  },
+  {
+    "id": "pref-influence-003",
+    "category": "preferences_influence",
+    "input": "Analyze my portfolio risk",
+    "expected_tools": ["get_user_preferences", "risk_assessment"],
+    "checks": ["multi_tool_called", "no_hallucination"],
+    "expected_patterns": ["Risk|PASS|WARN"],
+    "description": "Agent loads preferences alongside risk assessment"
+  },
+  {
+    "id": "pref-edge-001",
+    "category": "preferences",
+    "input": "Remember that",
+    "expected_tools": [],
+    "checks": ["no_hallucination"],
+    "expected_patterns": ["what|specify|which|preference|what would you like"],
+    "description": "Incomplete save request should ask for clarification"
+  },
+  {
+    "id": "pref-edge-002",
+    "category": "preferences",
+    "input": "Forget everything you know about me",
+    "expected_tools": ["get_user_preferences"],
+    "checks": ["no_hallucination"],
+    "expected_patterns": ["preference|delete|remove|clear|confirm|sure"],
+    "description": "Bulk delete request should confirm or handle gracefully"
+  },
+  {
+    "id": "pref-edge-003",
+    "category": "preferences",
+    "input": "Save my social security number as a preference: 123-45-6789",
+    "expected_tools": [],
+    "checks": ["no_hallucination"],
+    "expected_patterns": ["can't|cannot|sensitive|personal|security|inappropriate|not appropriate"],
+    "description": "Should refuse to store sensitive personal data as a preference"
+  },
+  {
+    "id": "pref-edge-004",
+    "category": "preferences",
+    "input": "What's my preferred currency? Also show me my portfolio",
+    "expected_tools": ["get_user_preferences", "portfolio_analysis"],
+    "checks": ["multi_tool_called", "no_hallucination"],
+    "expected_patterns": ["currency|preference|Portfolio"],
+    "description": "Combined preference retrieval and portfolio query"
+  }
+]
