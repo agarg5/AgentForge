@@ -511,5 +511,113 @@
     "checks": ["multi_tool_called", "no_hallucination"],
     "expected_patterns": [],
     "description": "Multiple questions in one message"
+  },
+  {
+    "id": "edge-004",
+    "category": "edge_cases",
+    "input": "I want to know about my portflio allocaton and how its been performin lately",
+    "expected_tools": ["portfolio_analysis"],
+    "checks": ["tool_called", "no_hallucination"],
+    "expected_patterns": [],
+    "description": "Query with multiple typos should still work"
+  },
+  {
+    "id": "edge-005",
+    "category": "edge_cases",
+    "input": "$$$ how much $$$ is my portfolio worth $$$",
+    "expected_tools": ["portfolio_analysis"],
+    "checks": ["tool_called", "no_hallucination"],
+    "expected_patterns": [],
+    "description": "Special characters in query"
+  },
+  {
+    "id": "edge-006",
+    "category": "edge_cases",
+    "input": "What is the price of AAPL? I said, what is the price of AAPL?",
+    "expected_tools": ["market_data"],
+    "checks": ["tool_called", "ticker_valid", "no_hallucination"],
+    "expected_patterns": ["AAPL"],
+    "description": "Repeated question should not confuse agent"
+  },
+  {
+    "id": "edge-007",
+    "category": "edge_cases",
+    "input": "asdfghjkl",
+    "expected_tools": [],
+    "checks": ["handles_empty_input"],
+    "expected_patterns": [],
+    "description": "Gibberish input should not crash"
+  },
+  {
+    "id": "edge-008",
+    "category": "edge_cases",
+    "input": "Can you help me?",
+    "expected_tools": [],
+    "checks": ["no_hallucination"],
+    "expected_patterns": ["portfolio|help|assist|can"],
+    "description": "Vague request should prompt clarification"
+  },
+  {
+    "id": "edge-009",
+    "category": "edge_cases",
+    "input": "Show me EVERYTHING about my portfolio, accounts, transactions, dividends, risk, and benchmarks all at once",
+    "expected_tools": ["portfolio_analysis"],
+    "checks": ["tool_called", "no_hallucination"],
+    "expected_patterns": [],
+    "description": "Extremely broad request should still respond reasonably"
+  },
+  {
+    "id": "edge-010",
+    "category": "edge_cases",
+    "input": "12345",
+    "expected_tools": [],
+    "checks": ["handles_empty_input"],
+    "expected_patterns": [],
+    "description": "Numeric-only input should not crash"
+  },
+  {
+    "id": "multi-006",
+    "category": "multi_tool",
+    "input": "Show me my dividends, account balances, and transaction history",
+    "expected_tools": ["dividend_analysis", "account_summary", "transaction_history"],
+    "checks": ["multi_tool_called", "no_hallucination"],
+    "expected_patterns": ["Dividend|Account|Transaction"],
+    "description": "Three-tool query: dividends + accounts + transactions"
+  },
+  {
+    "id": "multi-007",
+    "category": "multi_tool",
+    "input": "What are my portfolio holdings and what risks should I be aware of?",
+    "expected_tools": ["portfolio_analysis", "risk_assessment"],
+    "checks": ["multi_tool_called", "no_hallucination"],
+    "expected_patterns": ["Portfolio|Holdings|Risk"],
+    "description": "Portfolio holdings + risk awareness"
+  },
+  {
+    "id": "multi-008",
+    "category": "multi_tool",
+    "input": "Compare my portfolio to benchmarks and show my risk analysis",
+    "expected_tools": ["benchmark_comparison", "risk_assessment"],
+    "checks": ["multi_tool_called", "no_hallucination"],
+    "expected_patterns": ["Benchmark|Risk|%"],
+    "description": "Benchmarks + risk analysis"
+  },
+  {
+    "id": "multi-009",
+    "category": "multi_tool",
+    "input": "I'd like a complete financial checkup: portfolio value, dividends earned, and benchmark comparison",
+    "expected_tools": ["portfolio_analysis", "dividend_analysis", "benchmark_comparison"],
+    "checks": ["multi_tool_called", "no_hallucination"],
+    "expected_patterns": ["Portfolio|Dividend|Benchmark"],
+    "description": "Financial checkup: portfolio + dividends + benchmarks"
+  },
+  {
+    "id": "multi-010",
+    "category": "multi_tool",
+    "input": "Look up the price of MSFT and TSLA",
+    "expected_tools": ["market_data"],
+    "checks": ["tool_called", "no_hallucination"],
+    "expected_patterns": ["MSFT|Microsoft", "TSLA|Tesla"],
+    "description": "Multiple stock lookups in one query"
   }
 ]
