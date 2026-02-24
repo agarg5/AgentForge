@@ -7,6 +7,7 @@ from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import tool
 
 from ..client import GhostfolioClient
+from ..verification import verify_ticker
 
 VALID_ORDER_TYPES = ("BUY", "SELL", "DIVIDEND", "FEE", "INTEREST", "LIABILITY")
 
@@ -47,6 +48,11 @@ async def create_order(
         return "Error: unit_price must be non-negative."
     if order_type.upper() not in VALID_ORDER_TYPES:
         return f"Error: invalid order type '{order_type}'. Must be one of: {', '.join(VALID_ORDER_TYPES)}."
+
+    # Verify the ticker symbol resolves to a real security
+    valid, reason = await verify_ticker(client, symbol, data_source)
+    if not valid:
+        return f"Error: {reason}"
 
     order_data = {
         "symbol": symbol.upper(),
