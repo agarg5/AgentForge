@@ -62,8 +62,16 @@ Each golden set case includes a content-quality rubric:
 
 ## Getting an Auth Token
 
+1. Log in to your Ghostfolio instance
+2. Go to **Settings** (gear icon) → **Security Token**
+3. Copy the token — this is your `GHOSTFOLIO_ACCESS_TOKEN`
+
+Then exchange it for a JWT bearer token:
+
 ```bash
 curl -s -X POST https://ghostfolio-production-574b.up.railway.app/api/v1/auth/anonymous \
   -H "Content-Type: application/json" \
   -d '{"accessToken":"<GHOSTFOLIO_ACCESS_TOKEN>"}' | jq -r .authToken
 ```
+
+Use the returned JWT as `AGENT_AUTH_TOKEN` when running evals.
