@@ -5,6 +5,7 @@ import respx
 import httpx
 
 from src.client import GhostfolioClient
+from src.memory import MemoryStore
 
 
 BASE_URL = "http://ghostfolio.test"
@@ -26,6 +27,18 @@ async def client(mock_api):
 
 
 @pytest.fixture
-def tool_config(client):
+def memory_store():
+    """In-memory MemoryStore for testing (no Redis)."""
+    return MemoryStore()
+
+
+@pytest.fixture
+def tool_config(client, memory_store):
     """RunnableConfig dict expected by LangChain tools."""
-    return {"configurable": {"client": client}}
+    return {
+        "configurable": {
+            "client": client,
+            "memory": memory_store,
+            "auth_token": AUTH_TOKEN,
+        }
+    }
