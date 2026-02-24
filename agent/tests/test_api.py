@@ -10,7 +10,9 @@ def test_health():
     with TestClient(app) as tc:
         resp = tc.get("/health")
     assert resp.status_code == 200
-    assert resp.json() == {"status": "ok"}
+    data = resp.json()
+    assert data["status"] == "ok"
+    assert "tracing" in data
 
 
 def test_chat_missing_auth():
