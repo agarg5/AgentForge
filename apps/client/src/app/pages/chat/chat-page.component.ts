@@ -67,7 +67,9 @@ export class GfChatPageComponent implements AfterViewChecked, OnInit {
           content: msg.content,
           contentHtml:
             msg.role === 'agent'
-              ? (marked.parse(msg.content) as string)
+              ? this.sanitizer.bypassSecurityTrustHtml(
+                  marked.parse(msg.content) as string
+                )
               : undefined,
           role: msg.role as 'user' | 'agent',
           timestamp: new Date()
