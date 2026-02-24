@@ -34,7 +34,7 @@
         </div>
       </div>
     }
-    @for (message of messages; track message.timestamp) {
+    @for (message of messages; track $index) {
       <div
         class="message-row"
         [ngClass]="{
