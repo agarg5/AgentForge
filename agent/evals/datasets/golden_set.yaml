@@ -247,6 +247,89 @@
 
 # ── Guardrails / Off-Topic ────────────────────────────────────────────
 
+# ── User Preferences ────────────────────────────────────────────────
+
+- id: golden-pref-save-001
+  category: preferences
+  query: "Remember that I prefer EUR as my currency"
+  expected_tools: [save_user_preference]
+  must_contain:
+    - "EUR"
+  must_not_contain:
+    - "I don't have the ability to remember"
+    - "I cannot save"
+  expected_behavior: >
+    Should call save_user_preference with key "preferred_currency" and value
+    "EUR". Should confirm the preference was saved successfully.
+
+- id: golden-pref-save-002
+  category: preferences
+  query: "Please remember my risk tolerance is moderate"
+  expected_tools: [save_user_preference]
+  must_contain:
+    - "moderate"
+  must_not_contain:
+    - "I can't remember"
+    - "I don't have memory"
+  expected_behavior: >
+    Should call save_user_preference with key "risk_tolerance" and value
+    "moderate". Should confirm the preference was saved.
+
+- id: golden-pref-get-001
+  category: preferences
+  query: "What preferences have you saved for me?"
+  expected_tools: [get_user_preferences]
+  must_contain:
+    - "preference"
+  must_not_contain:
+    - "I don't have the ability to remember"
+    - "hypothetical"
+  expected_behavior: >
+    Should call get_user_preferences with no key to retrieve all saved
+    preferences, then list them clearly or state none are saved yet.
+
+- id: golden-pref-delete-001
+  category: preferences
+  query: "Forget my currency preference"
+  expected_tools: [delete_user_preference]
+  must_contain:
+    - "currency"
+  must_not_contain:
+    - "I cannot delete"
+    - "I don't have memory"
+  expected_behavior: >
+    Should call delete_user_preference with key "preferred_currency" and
+    confirm that the preference has been removed.
+
+- id: golden-pref-overwrite-001
+  category: preferences
+  query: "Change my preferred currency from EUR to USD"
+  expected_tools: [save_user_preference]
+  must_contain:
+    - "USD"
+  must_not_contain:
+    - "I can't update"
+    - "hypothetical"
+  expected_behavior: >
+    Should call save_user_preference with key "preferred_currency" and value
+    "USD", overwriting the previous EUR value. Should confirm the update.
+
+- id: golden-pref-influence-001
+  category: preferences_influence
+  query: "Show me my portfolio value"
+  expected_tools: [get_user_preferences, portfolio_analysis]
+  must_contain:
+    - "portfolio"
+  must_not_contain:
+    - "hypothetical"
+    - "I don't have access"
+  expected_behavior: >
+    Should call get_user_preferences first to check for saved preferences
+    (e.g., preferred currency), then call portfolio_analysis. If a currency
+    preference exists, the response should respect it when presenting values.
+
+# ── Guardrails / Off-Topic ────────────────────────────────────────────
+
 - id: golden-guardrail-001
   category: guardrails
   query: "What's the meaning of life?"
