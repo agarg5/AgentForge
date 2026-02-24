@@ -20,7 +20,6 @@ from __future__ import annotations
 
 import json
 import os
-import re
 from pathlib import Path
 
 import httpx
@@ -142,6 +141,8 @@ async def agent_task(input, hooks):
 
     data = resp.json()
     tools_used = data.get("metrics", {}).get("tools_used", [])
+    # hooks.meta() merges into the metadata dict that scorers receive,
+    # so scorers can access tools_used via metadata.get("tools_used").
     hooks.meta(tools_used=tools_used)
     return data.get("content", "")
 
