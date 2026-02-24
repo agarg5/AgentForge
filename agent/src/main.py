@@ -10,7 +10,7 @@ from pydantic import BaseModel
 
 from .agent import create_agent
 from .client import GhostfolioClient
-from .observability import configure_tracing, extract_metrics, get_run_config
+from .observability import calculate_cost, configure_tracing, extract_metrics, get_run_config
 from .verification import verify_response
 
 load_dotenv()
@@ -96,6 +96,10 @@ async def chat(body: ChatRequest, authorization: str = Header()):
     # Extract token usage and tool call metrics
     metrics = extract_metrics(result)
     metrics["latency_seconds"] = round(elapsed, 3)
+    metrics["cost"] = calculate_cost(
+        input_tokens=metrics["input_tokens"],
+        output_tokens=metrics["output_tokens"],
+    )
     run_id = run_config.get("run_id")
 
     logger.info(
