@@ -8,7 +8,9 @@ from fastapi import FastAPI, Header, HTTPException
 from langchain_core.messages import AIMessage, HumanMessage
 from pydantic import BaseModel
 
-from .agent import create_agent
+from langgraph.errors import GraphRecursionError
+
+from .agent import MAX_AGENT_STEPS, create_agent
 from .client import GhostfolioClient
 from .memory import ChatHistoryStore, MemoryStore
 from .observability import calculate_cost, configure_tracing, extract_metrics, get_run_config
@@ -149,6 +151,8 @@ async def chat(body: ChatRequest, authorization: str = Header()):
         "memory": memory_store,
         "auth_token": token,
     }
+    # Prevent runaway tool-call loops by capping the number of LangGraph steps
+    run_config["recursion_limit"] = MAX_AGENT_STEPS
 
     start_time = time.monotonic()
     run_id = run_config.get("run_id")
@@ -160,6 +164,14 @@ async def chat(body: ChatRequest, authorization: str = Header()):
                 {"messages": messages},
                 config=run_config,
             )
+    except GraphRecursionError:
+        elapsed = time.monotonic() - start_time
+        logger.error("Agent hit recursion limit run_id=%s latency=%.2fs", run_id, elapsed)
+        return ChatResponse(
+            content="I ran into a complexity limit while processing your request. Could you try rephrasing with a more specific question?",
+            run_id=run_id,
+            metrics={"error": "recursion_limit_reached", "latency_seconds": round(elapsed, 3)},
+        )
     except Exception as e:
         elapsed = time.monotonic() - start_time
         logger.error("Agent error run_id=%s latency=%.2fs: %s", run_id, elapsed, e)

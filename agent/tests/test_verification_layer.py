@@ -153,7 +153,8 @@ class TestVerifyResponse:
         )
         assert result["amended"]
         assert "informational purposes" in result["response"]
-        assert not result["checks"][0]["passed"]  # disclaimer check failed
+        disclaimer_check = next(c for c in result["checks"] if c["name"] == "disclaimer")
+        assert not disclaimer_check["passed"]
 
     def test_does_not_amend_when_disclaimer_present(self):
         result = verify_response(
@@ -161,16 +162,19 @@ class TestVerifyResponse:
             tools_used=["portfolio_analysis"],
         )
         assert not result["amended"]
-        assert result["checks"][0]["passed"]
+        disclaimer_check = next(c for c in result["checks"] if c["name"] == "disclaimer")
+        assert disclaimer_check["passed"]
 
-    def test_includes_all_three_checks(self):
+    def test_includes_all_five_checks(self):
         result = verify_response(
             response="test",
             tools_used=[],
         )
         check_names = [c["name"] for c in result["checks"]]
+        assert "scope" in check_names
         assert "disclaimer" in check_names
         assert "numeric_consistency" in check_names
+        assert "confidence" in check_names
         assert "ticker_verification" in check_names
 
     def test_ticker_always_passes(self):
@@ -198,3 +202,11 @@ class TestVerifyResponse:
         )
         assert not result["amended"]
         assert all(c["passed"] for c in result["checks"])
+
+    def test_scope_check_runs(self):
+        result = verify_response(
+            response="Your portfolio holdings show a balanced allocation across stocks and bonds.",
+            tools_used=["portfolio_analysis"],
+        )
+        scope_check = next(c for c in result["checks"] if c["name"] == "scope")
+        assert scope_check["passed"]

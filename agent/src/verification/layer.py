@@ -8,8 +8,10 @@ from __future__ import annotations
 
 import logging
 
+from .confidence import LOW_CONFIDENCE_CAVEAT, LOW_CONFIDENCE_THRESHOLD, score_confidence
 from .disclaimer import check_disclaimer
 from .numeric import check_numeric_consistency
+from .scope import check_scope
 
 logger = logging.getLogger("agentforge.verification")
 
@@ -41,7 +43,17 @@ def verify_response(
     amended = False
     final_response = response
 
-    # Check 1: Disclaimer
+    # Check 1: Scope — is the response on-topic?
+    try:
+        passed, detail = check_scope(response, tools_used)
+        checks.append({"name": "scope", "passed": passed, "detail": detail})
+        if not passed:
+            logger.warning("Scope check failed: %s", detail)
+    except Exception as e:
+        logger.error("Scope check failed: %s", e)
+        checks.append({"name": "scope", "passed": True, "detail": f"Check error: {e}"})
+
+    # Check 2: Disclaimer
     try:
         passed, detail = check_disclaimer(response, tools_used)
         checks.append({"name": "disclaimer", "passed": passed, "detail": detail})
@@ -53,7 +65,7 @@ def verify_response(
         logger.error("Disclaimer check failed: %s", e)
         checks.append({"name": "disclaimer", "passed": True, "detail": f"Check error: {e}"})
 
-    # Check 2: Numeric consistency
+    # Check 3: Numeric consistency
     try:
         passed, detail = check_numeric_consistency(response, tool_outputs or [])
         checks.append({"name": "numeric_consistency", "passed": passed, "detail": detail})
@@ -63,7 +75,19 @@ def verify_response(
         logger.error("Numeric consistency check failed: %s", e)
         checks.append({"name": "numeric_consistency", "passed": True, "detail": f"Check error: {e}"})
 
-    # Check 3: Ticker verification is done at tool-call time (create_order.py)
+    # Check 4: Confidence scoring
+    try:
+        confidence, detail = score_confidence(response, tools_used, tool_outputs)
+        checks.append({"name": "confidence", "passed": confidence >= LOW_CONFIDENCE_THRESHOLD, "detail": detail})
+        if confidence < LOW_CONFIDENCE_THRESHOLD:
+            final_response += LOW_CONFIDENCE_CAVEAT
+            amended = True
+            logger.info("Appended low-confidence caveat (score=%.2f)", confidence)
+    except Exception as e:
+        logger.error("Confidence scoring failed: %s", e)
+        checks.append({"name": "confidence", "passed": True, "detail": f"Check error: {e}"})
+
+    # Check 5: Ticker verification is done at tool-call time (create_order.py)
     # Record it as always-passed here since it's enforced upstream
     checks.append({"name": "ticker_verification", "passed": True, "detail": "Enforced at tool-call time"})
 
