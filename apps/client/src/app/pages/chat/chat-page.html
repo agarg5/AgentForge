@@ -43,8 +43,12 @@
             <mat-icon>auto_awesome</mat-icon>
           </div>
         }
-        <div class="message-bubble">
-          {{ message.content }}
+        <div class="message-bubble" [class.markdown-content]="message.role === 'agent'">
+          @if (message.contentHtml) {
+            <div [innerHTML]="message.contentHtml"></div>
+          } @else {
+            {{ message.content }}
+          }
         </div>
       </div>
     }
