@@ -15,12 +15,13 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { marked } from 'marked';
 
 interface ChatMessage {
   role: 'user' | 'agent';
   content: string;
-  contentHtml?: string;
+  contentHtml?: SafeHtml;
   timestamp: Date;
 }
 
@@ -51,7 +52,8 @@ export class GfChatPageComponent implements AfterViewChecked {
 
   public constructor(
     private changeDetectorRef: ChangeDetectorRef,
-    private dataService: DataService
+    private dataService: DataService,
+    private sanitizer: DomSanitizer
   ) {
     marked.setOptions({ breaks: true });
   }
@@ -90,7 +92,9 @@ export class GfChatPageComponent implements AfterViewChecked {
       next: (response) => {
         this.messages.push({
           content: response.content,
-          contentHtml: marked.parse(response.content) as string,
+          contentHtml: this.sanitizer.bypassSecurityTrustHtml(
+            marked.parse(response.content) as string
+          ),
           role: 'agent',
           timestamp: new Date()
         });
