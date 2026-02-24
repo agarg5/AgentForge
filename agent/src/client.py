@@ -99,3 +99,47 @@ class GhostfolioClient:
             )
             resp.raise_for_status()
             return resp.json()
+
+    async def get_portfolio_report(self) -> dict:
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(
+                f"{self.base_url}/api/v1/portfolio/report",
+                headers=self._headers,
+                timeout=30,
+            )
+            resp.raise_for_status()
+            return resp.json()
+
+    async def get_benchmarks(self) -> list:
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(
+                f"{self.base_url}/api/v1/benchmarks",
+                headers=self._headers,
+                timeout=30,
+            )
+            resp.raise_for_status()
+            return resp.json()
+
+    async def get_dividends(
+        self, range: str = "max", filters: dict | None = None
+    ) -> dict:
+        params = self._build_params(range, filters)
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(
+                f"{self.base_url}/api/v1/portfolio/dividends",
+                headers=self._headers,
+                params=params,
+                timeout=30,
+            )
+            resp.raise_for_status()
+            return resp.json()
+
+    async def get_accounts(self) -> dict:
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(
+                f"{self.base_url}/api/v1/account",
+                headers=self._headers,
+                timeout=30,
+            )
+            resp.raise_for_status()
+            return resp.json()
