@@ -19,6 +19,17 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("agentforge")
 
+# Sliding window: max messages sent to the LLM to manage context size and cost.
+# 50 messages ≈ 25 conversation turns (user + agent).
+MAX_HISTORY_MESSAGES = 50
+
+
+def trim_messages(messages: list, max_messages: int = MAX_HISTORY_MESSAGES) -> list:
+    """Trim a message list to the most recent *max_messages* entries."""
+    if len(messages) > max_messages:
+        return messages[-max_messages:]
+    return messages
+
 app = FastAPI(title="AgentForge", version="0.1.0")
 
 GHOSTFOLIO_BASE_URL = os.getenv("GHOSTFOLIO_BASE_URL", "http://localhost:3333")
@@ -114,11 +125,25 @@ async def chat(body: ChatRequest, authorization: str = Header()):
 
     messages.append(HumanMessage(content=body.message))
 
+    # Sliding window: keep only recent messages to manage context size
+    total_before = len(messages)
+    messages = trim_messages(messages)
+    if len(messages) < total_before:
+        logger.info(
+            "Context window trimmed from %d to %d messages",
+            total_before,
+            len(messages),
+        )
+
     # Build LangSmith run config with tracing metadata
     run_config = get_run_config(
         session_id=body.session_id,
         tags=["chat"],
-        metadata={"message_length": len(body.message)},
+        metadata={
+            "message_length": len(body.message),
+            "message_count": len(messages),
+            "messages_trimmed": total_before - len(messages),
+        },
     )
     run_config["configurable"] = {
         "memory": memory_store,
