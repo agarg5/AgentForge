@@ -2,7 +2,32 @@
   <div #messagesContainer class="messages-area">
     @if (messages.length === 0 && !isLoading) {
       <div class="empty-state">
+        <mat-icon class="empty-state-icon">auto_awesome</mat-icon>
+        <h2 i18n>Portfolio Assistant</h2>
         <p i18n>Ask me anything about your portfolio</p>
+        <div class="suggestion-chips">
+          <button
+            class="chip"
+            (click)="onSuggestionClick('How is my portfolio performing?')"
+            i18n
+          >
+            How is my portfolio performing?
+          </button>
+          <button
+            class="chip"
+            (click)="onSuggestionClick('Show my asset allocation')"
+            i18n
+          >
+            Show my asset allocation
+          </button>
+          <button
+            class="chip"
+            (click)="onSuggestionClick('What dividends have I earned?')"
+            i18n
+          >
+            What dividends have I earned?
+          </button>
+        </div>
       </div>
     }
     @for (message of messages; track message.timestamp) {
@@ -13,6 +38,11 @@
           'message-agent': message.role === 'agent'
         }"
       >
+        @if (message.role === 'agent') {
+          <div class="avatar agent-avatar">
+            <mat-icon>auto_awesome</mat-icon>
+          </div>
+        }
         <div class="message-bubble">
           {{ message.content }}
         </div>
@@ -20,27 +50,33 @@
     }
     @if (isLoading) {
       <div class="message-row message-agent">
-        <mat-spinner diameter="24" />
+        <div class="avatar agent-avatar">
+          <mat-icon>auto_awesome</mat-icon>
+        </div>
+        <div class="message-bubble typing-indicator">
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </div>
       </div>
     }
   </div>
   <div class="input-area">
-    <mat-form-field appearance="outline" class="w-100">
+    <div class="input-wrapper">
       <input
         i18n-placeholder
-        matInput
-        placeholder="Type a message..."
+        placeholder="Ask about your portfolio..."
         [(ngModel)]="messageInput"
         (keydown.enter)="onSendMessage()"
       />
-    </mat-form-field>
-    <button
-      color="primary"
-      mat-icon-button
-      [disabled]="!messageInput.trim() || isLoading"
-      (click)="onSendMessage()"
-    >
-      <mat-icon>send</mat-icon>
-    </button>
+      <button
+        class="send-button"
+        [class.active]="messageInput.trim() && !isLoading"
+        [disabled]="!messageInput.trim() || isLoading"
+        (click)="onSendMessage()"
+      >
+        <mat-icon>arrow_upward</mat-icon>
+      </button>
+    </div>
   </div>
 </div>
