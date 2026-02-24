@@ -7,7 +7,6 @@ Falls back to an in-memory dict when Redis is unavailable (dev/testing).
 from __future__ import annotations
 
 import hashlib
-import json
 import logging
 from typing import Protocol
 
