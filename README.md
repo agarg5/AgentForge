@@ -86,6 +86,12 @@ Three eval suites with 90+ test cases. See [`agent/evals/README.md`](agent/evals
 - All responses include financial disclaimers
 - No fabricated data — values come from tool output or the agent says so honestly
 
+## Open Source Contribution
+
+We contributed a bug fix back to the upstream Ghostfolio project:
+
+- **PR [ghostfolio/ghostfolio#6397](https://github.com/ghostfolio/ghostfolio/pull/6397)** — Fix X-ray rule exception when `marketPrice` is null. The `/api/v1/portfolio/report` endpoint crashed with a `[big.js] Invalid number` error when a holding had no market price data (e.g. newly added activity before price data is fetched). Fixes [#4607](https://github.com/ghostfolio/ghostfolio/issues/4607).
+
 ## License
 
 The Ghostfolio platform is licensed under [AGPLv3](https://www.gnu.org/licenses/agpl-3.0.html). See the upstream repo for details.
