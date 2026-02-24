@@ -6,7 +6,7 @@ Three eval datasets tested via a unified [Braintrust](https://braintrust.dev) ru
 
 | Dataset | Cases | Purpose |
 |---------|-------|---------|
-| [cases.json](datasets/cases.json) | 60+ | Core functional evals — tool routing, formatting, hallucination, edge cases |
+| [cases.json](datasets/cases.json) | 69 | Core functional evals — tool routing, formatting, hallucination, edge cases |
 | [guardrails_cases.json](datasets/guardrails_cases.json) | 20 | Adversarial evals — jailbreaks, prompt injection, social engineering, off-topic |
 | [golden_set.yaml](datasets/golden_set.yaml) | 20 | Golden set — curated rubrics with `must_contain` / `must_not_contain` / `expected_behavior` |
 
