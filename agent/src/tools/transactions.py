@@ -42,8 +42,8 @@ async def transaction_history(
 
     lines = [
         f"**Transactions** (showing {len(activities)} activities)\n",
-        "| Date | Type | Symbol | Quantity | Unit Price | Fee | Currency |",
-        "|------|------|--------|----------|------------|-----|----------|",
+        "| Date | Type | Symbol | Quantity | Unit Price | Fee | Currency | Order ID |",
+        "|------|------|--------|----------|------------|-----|----------|----------|",
     ]
 
     for a in activities:
@@ -54,8 +54,9 @@ async def transaction_history(
         unit_price = a.get("unitPrice", 0)
         fee = a.get("fee", 0)
         currency = a.get("SymbolProfile", {}).get("currency", "") or a.get("currency", "")
+        order_id = a.get("id", "")
         lines.append(
-            f"| {date} | {activity_type} | {symbol} | {quantity:,.4g} | {unit_price:,.2f} | {fee:,.2f} | {currency} |"
+            f"| {date} | {activity_type} | {symbol} | {quantity:,.4g} | {unit_price:,.2f} | {fee:,.2f} | {currency} | {order_id} |"
         )
 
     return "\n".join(lines)

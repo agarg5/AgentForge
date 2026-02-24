@@ -4,6 +4,8 @@ from langgraph.prebuilt import create_react_agent
 from .prompts.system import SYSTEM_PROMPT
 from .tools.accounts import account_summary
 from .tools.benchmark import benchmark_comparison
+from .tools.create_order import create_order
+from .tools.delete_order import delete_order
 from .tools.dividends import dividend_analysis
 from .tools.market_data import market_data
 from .tools.portfolio import portfolio_analysis
@@ -23,6 +25,8 @@ def create_agent():
         benchmark_comparison,
         dividend_analysis,
         account_summary,
+        create_order,
+        delete_order,
     ]
 
     agent = create_react_agent(

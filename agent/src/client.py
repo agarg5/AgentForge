@@ -143,3 +143,24 @@ class GhostfolioClient:
             )
             resp.raise_for_status()
             return resp.json()
+
+    async def create_order(self, order_data: dict) -> dict:
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(
+                f"{self.base_url}/api/v1/order",
+                headers=self._headers,
+                json=order_data,
+                timeout=30,
+            )
+            resp.raise_for_status()
+            return resp.json()
+
+    async def delete_order(self, order_id: str) -> dict:
+        async with httpx.AsyncClient() as client:
+            resp = await client.delete(
+                f"{self.base_url}/api/v1/order/{order_id}",
+                headers=self._headers,
+                timeout=30,
+            )
+            resp.raise_for_status()
+            return resp.json()
