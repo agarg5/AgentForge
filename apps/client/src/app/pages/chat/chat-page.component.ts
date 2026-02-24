@@ -108,6 +108,11 @@ export class GfChatPageComponent implements AfterViewChecked {
     });
   }
 
+  public onSuggestionClick(suggestion: string) {
+    this.messageInput = suggestion;
+    this.onSendMessage();
+  }
+
   private scrollToBottom() {
     const container = this.messagesContainer?.nativeElement;
 
