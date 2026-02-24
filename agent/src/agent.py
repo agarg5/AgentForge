@@ -13,6 +13,12 @@ from .tools.risk_assessment import risk_assessment
 from .tools.preferences import delete_user_preference, get_user_preferences, save_user_preference
 from .tools.transactions import transaction_history
 
+# Maximum number of ReAct reasoning steps before the agent must produce a final
+# answer.  Each "step" is one LLM call → tool call → observation cycle.
+# This prevents runaway loops (e.g. repeated failing tool calls).
+# LangGraph counts each node invocation as one step toward the limit.
+MAX_AGENT_STEPS = 25
+
 
 def create_agent():
     """Create a LangChain agent with Ghostfolio tools."""
@@ -44,4 +50,4 @@ def create_agent():
         prompt=SYSTEM_PROMPT,
     )
 
-    return agent
+    return agent, MAX_AGENT_STEPS
