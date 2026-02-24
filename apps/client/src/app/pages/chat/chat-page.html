@@ -1,6 +1,10 @@
 <div class="chat-container">
   <div #messagesContainer class="messages-area">
-    @if (messages.length === 0 && !isLoading) {
+    @if (isLoadingHistory) {
+      <div class="empty-state">
+        <mat-spinner diameter="32"></mat-spinner>
+      </div>
+    } @else if (messages.length === 0 && !isLoading) {
       <div class="empty-state">
         <mat-icon class="empty-state-icon">auto_awesome</mat-icon>
         <h2 i18n>Portfolio Assistant</h2>
@@ -30,7 +34,7 @@
         </div>
       </div>
     }
-    @for (message of messages; track message.timestamp) {
+    @for (message of messages; track $index) {
       <div
         class="message-row"
         [ngClass]="{
@@ -66,6 +70,17 @@
     }
   </div>
   <div class="input-area">
+    @if (messages.length > 0) {
+      <button
+        class="clear-chat-button"
+        (click)="onClearChat()"
+        [disabled]="isLoading"
+        i18n
+      >
+        <mat-icon>delete_outline</mat-icon>
+        Clear Chat
+      </button>
+    }
     <div class="input-wrapper">
       <input
         i18n-placeholder

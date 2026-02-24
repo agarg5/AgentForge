@@ -8,6 +8,7 @@ import type { AiPromptMode, RequestWithUser } from '@ghostfolio/common/types';
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Headers,
   HttpException,
@@ -42,6 +43,40 @@ export class AiController {
       return await this.aiService.forwardToAgent({
         message: body.message,
         history: body.history,
+        authToken: authorization
+      });
+    } catch (error) {
+      throw new HttpException(
+        error.message ?? 'Agent unavailable',
+        error.status ?? HttpStatus.BAD_GATEWAY
+      );
+    }
+  }
+
+  @Get('chat/history')
+  @UseGuards(AuthGuard('jwt'), HasPermissionGuard)
+  public async getChatHistory(
+    @Headers('authorization') authorization: string
+  ) {
+    try {
+      return await this.aiService.getChatHistory({
+        authToken: authorization
+      });
+    } catch (error) {
+      throw new HttpException(
+        error.message ?? 'Agent unavailable',
+        error.status ?? HttpStatus.BAD_GATEWAY
+      );
+    }
+  }
+
+  @Delete('chat/history')
+  @UseGuards(AuthGuard('jwt'), HasPermissionGuard)
+  public async clearChatHistory(
+    @Headers('authorization') authorization: string
+  ) {
+    try {
+      return await this.aiService.clearChatHistory({
         authToken: authorization
       });
     } catch (error) {
