@@ -272,6 +272,30 @@ def check_expected_patterns(result: EvalResult, patterns: list[str]) -> tuple[bo
     return False, f"None of the expected patterns {patterns} found in response."
 
 
+def must_contain_all(result: EvalResult, phrases: list[str]) -> tuple[bool, str]:
+    """All phrases in the list must appear in the response (case-insensitive)."""
+    if not phrases:
+        return True, "No must_contain phrases specified."
+
+    output_lower = result.output.lower()
+    missing = [p for p in phrases if p.lower() not in output_lower]
+    if missing:
+        return False, f"Missing required phrases: {missing}"
+    return True, f"All {len(phrases)} required phrases found."
+
+
+def must_not_contain_any(result: EvalResult, phrases: list[str]) -> tuple[bool, str]:
+    """None of the phrases in the list should appear in the response (case-insensitive)."""
+    if not phrases:
+        return True, "No must_not_contain phrases specified."
+
+    output_lower = result.output.lower()
+    found = [p for p in phrases if p.lower() in output_lower]
+    if found:
+        return False, f"Banned phrases found: {found}"
+    return True, f"None of {len(phrases)} banned phrases found."
+
+
 # Registry of all check functions
 CHECKS: dict[str, callable] = {
     "tool_called": tool_called,
