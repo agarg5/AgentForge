@@ -1,19 +1,9 @@
 """Tests for the FastAPI /chat and /health endpoints."""
 
-import httpx
 import pytest
-import respx
 from fastapi.testclient import TestClient
 
 from src.main import app
-
-BASE_URL = "http://ghostfolio.test"
-
-
-@pytest.fixture(autouse=True)
-def _set_env(monkeypatch):
-    """Point the agent at a fake Ghostfolio URL."""
-    monkeypatch.setenv("GHOSTFOLIO_BASE_URL", BASE_URL)
 
 
 def test_health():

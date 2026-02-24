@@ -31,11 +31,13 @@ async def verify_ticker(
         if e.response.status_code != 404:
             return False, f"Error verifying symbol: {e.response.status_code}"
         # 404 → symbol not found via profile, try search
+    except httpx.HTTPError:
+        pass  # Connection/timeout error → fall through to search
 
     # 2. Fallback: search to see if the symbol exists under a different source
     try:
         results = await client.symbol_lookup(symbol)
-    except httpx.HTTPStatusError:
+    except httpx.HTTPError:
         # If search also fails, we can't verify — allow through with warning
         return True, ""
 
