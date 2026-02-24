@@ -122,7 +122,8 @@ class GhostfolioClient:
 
     async def get_benchmarks(self) -> list:
         resp = await self._request("GET", "/api/v1/benchmarks")
-        return resp.json()
+        data = resp.json()
+        return data.get("benchmarks", []) if isinstance(data, dict) else data
 
     async def get_dividends(
         self, range: str = "max", filters: dict | None = None
