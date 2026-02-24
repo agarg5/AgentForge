@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import logging
 
+from .confidence import LOW_CONFIDENCE_CAVEAT, LOW_CONFIDENCE_THRESHOLD, score_confidence
 from .disclaimer import check_disclaimer
 from .numeric import check_numeric_consistency
 from .scope import check_scope
@@ -74,7 +75,19 @@ def verify_response(
         logger.error("Numeric consistency check failed: %s", e)
         checks.append({"name": "numeric_consistency", "passed": True, "detail": f"Check error: {e}"})
 
-    # Check 4: Ticker verification is done at tool-call time (create_order.py)
+    # Check 4: Confidence scoring
+    try:
+        confidence, detail = score_confidence(response, tools_used, tool_outputs)
+        checks.append({"name": "confidence", "passed": confidence >= LOW_CONFIDENCE_THRESHOLD, "detail": detail})
+        if confidence < LOW_CONFIDENCE_THRESHOLD:
+            final_response += LOW_CONFIDENCE_CAVEAT
+            amended = True
+            logger.info("Appended low-confidence caveat (score=%.2f)", confidence)
+    except Exception as e:
+        logger.error("Confidence scoring failed: %s", e)
+        checks.append({"name": "confidence", "passed": True, "detail": f"Check error: {e}"})
+
+    # Check 5: Ticker verification is done at tool-call time (create_order.py)
     # Record it as always-passed here since it's enforced upstream
     checks.append({"name": "ticker_verification", "passed": True, "detail": "Enforced at tool-call time"})
 

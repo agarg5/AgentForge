@@ -165,7 +165,7 @@ class TestVerifyResponse:
         disclaimer_check = next(c for c in result["checks"] if c["name"] == "disclaimer")
         assert disclaimer_check["passed"]
 
-    def test_includes_all_four_checks(self):
+    def test_includes_all_five_checks(self):
         result = verify_response(
             response="test",
             tools_used=[],
@@ -174,6 +174,7 @@ class TestVerifyResponse:
         assert "scope" in check_names
         assert "disclaimer" in check_names
         assert "numeric_consistency" in check_names
+        assert "confidence" in check_names
         assert "ticker_verification" in check_names
 
     def test_ticker_always_passes(self):
