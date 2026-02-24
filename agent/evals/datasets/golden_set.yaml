@@ -245,8 +245,6 @@
     Should call all three tools and synthesize the results into a comprehensive
     financial overview covering value, income, and performance vs benchmarks.
 
-# ── Guardrails / Off-Topic ────────────────────────────────────────────
-
 # ── User Preferences ────────────────────────────────────────────────
 
 - id: golden-pref-save-001
