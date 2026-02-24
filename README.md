@@ -50,7 +50,7 @@ agent/                     # AI agent (Python)
 │   ├── memory/            # Persistent preference store
 │   └── client.py          # Ghostfolio API client
 ├── evals/                 # Evaluation framework (see evals/README.md)
-│   ├── datasets/          # Test cases (90+ across 3 datasets)
+│   ├── datasets/          # Test cases (137 across 3 datasets)
 │   └── bt_eval.py         # Braintrust eval runner
 └── tests/                 # Unit tests
 
@@ -70,7 +70,7 @@ Both services run on Railway:
 
 ## Evals
 
-Three eval suites with 90+ test cases. See [`agent/evals/README.md`](agent/evals/README.md) for details.
+Three eval suites with 137 test cases. See [`agent/evals/README.md`](agent/evals/README.md) for details.
 
 | Dataset | Cases | Purpose |
 |---------|-------|---------|
@@ -88,7 +88,7 @@ Three eval suites with 90+ test cases. See [`agent/evals/README.md`](agent/evals
 
 ## Open Source Contribution
 
-We contributed a bug fix back to the upstream Ghostfolio project:
+AgentForge is listed as a [Ghostfolio community project](https://github.com/topics/ghostfolio) and we contributed a bug fix back to the upstream project:
 
 - **PR [ghostfolio/ghostfolio#6397](https://github.com/ghostfolio/ghostfolio/pull/6397)** — Fix X-ray rule exception when `marketPrice` is null. The `/api/v1/portfolio/report` endpoint crashed with a `[big.js] Invalid number` error when a holding had no market price data (e.g. newly added activity before price data is fetched). Fixes [#4607](https://github.com/ghostfolio/ghostfolio/issues/4607).
 
