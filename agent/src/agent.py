@@ -16,7 +16,12 @@ from .tools.transactions import transaction_history
 
 def create_agent():
     """Create a LangChain agent with Ghostfolio tools."""
-    llm = ChatOpenAI(model="gpt-4o", temperature=0)
+    llm = ChatOpenAI(
+        model="gpt-4o",
+        temperature=0,
+        max_retries=5,  # Retry on 429 rate limit errors with exponential backoff
+        request_timeout=60,
+    )
 
     tools = [
         portfolio_analysis,

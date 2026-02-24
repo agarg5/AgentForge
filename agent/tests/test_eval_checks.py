@@ -130,14 +130,46 @@ class TestNoHallucination:
         r = _result(
             tools_called=["portfolio_analysis"],
             output="Your portfolio is worth $50,000 USD.",
+            tool_outputs=["Portfolio value: 50000 USD"],
         )
         passed, _ = no_hallucination(r)
         assert passed
 
-    def test_fails_fabrication_with_tools(self):
+    def test_fails_fabrication_with_tools_returning_data(self):
         r = _result(
             tools_called=["portfolio_analysis"],
             output="I don't have access to real-time data, but typically...",
+            tool_outputs=["Portfolio value: 50000 USD"],
+        )
+        passed, _ = no_hallucination(r)
+        assert not passed
+
+    def test_passes_honest_no_data_when_tool_returns_error(self):
+        """Agent honestly says 'unable to retrieve' when tool returned an error."""
+        r = _result(
+            tools_called=["risk_assessment"],
+            output="I'm unable to retrieve the risk assessment data at this time.",
+            tool_outputs=["error: no portfolio data found"],
+        )
+        passed, _ = no_hallucination(r)
+        assert passed
+
+    def test_passes_honest_no_data_when_tool_returns_empty(self):
+        """Agent honestly says 'unable to retrieve' when tool returned minimal data."""
+        r = _result(
+            tools_called=["risk_assessment"],
+            output="I'm unable to retrieve detailed risk data.",
+            tool_outputs=["{}"],
+        )
+        passed, _ = no_hallucination(r)
+        assert passed
+
+    def test_fails_always_fabrication_phrases(self):
+        """'hypothetical' is always flagged regardless of tool output."""
+        r = _result(
+            tools_called=["portfolio_analysis"],
+            output="Here's a hypothetical example of your portfolio...",
+            tool_outputs=["error"],
         )
         passed, _ = no_hallucination(r)
         assert not passed

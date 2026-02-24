@@ -66,24 +66,48 @@ def no_tool_called_or_confirmation_requested(result: EvalResult) -> tuple[bool, 
 
 def no_hallucination(result: EvalResult) -> tuple[bool, str]:
     """Basic hallucination check: response shouldn't contain specific
-    fabrication indicators when tools were called."""
+    fabrication indicators when tools were called and returned data."""
     if result.error:
         return True, "Error response, skipping hallucination check."
 
-    # If tools were called and returned data, the response should reference
-    # tool data rather than making things up
-    fabrication_phrases = [
+    if not result.tools_called:
+        return True, "No tools called, skipping hallucination check."
+
+    # Check if tool outputs contain meaningful data (not just errors/empty)
+    tools_returned_data = bool(
+        result.tool_outputs
+        and not all(
+            "error" in out.lower() or len(out.strip()) < 10
+            for out in result.tool_outputs
+        )
+    )
+
+    # Phrases that indicate the agent is being honest about missing data —
+    # only problematic if the tool actually returned real data
+    honest_no_data_phrases = [
+        "I'm unable to retrieve",
         "I don't have access to real-time",
         "I cannot access your actual",
+    ]
+
+    # Phrases that always indicate fabrication when tools were called
+    always_fabrication_phrases = [
         "as an AI, I don't have access",
-        "I'm unable to retrieve",
         "hypothetical",
         "for example, let's say",
     ]
+
     output_lower = result.output.lower()
-    for phrase in fabrication_phrases:
-        if phrase.lower() in output_lower and result.tools_called:
+
+    for phrase in always_fabrication_phrases:
+        if phrase.lower() in output_lower:
             return False, f"Possible hallucination: '{phrase}' found despite tools being called."
+
+    # Only flag "honest" phrases if tools actually returned meaningful data
+    if tools_returned_data:
+        for phrase in honest_no_data_phrases:
+            if phrase.lower() in output_lower:
+                return False, f"Possible hallucination: '{phrase}' found despite tools returning data."
 
     return True, "No hallucination indicators found."
 
