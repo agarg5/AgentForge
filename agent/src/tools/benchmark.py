@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Optional
 
+import httpx
 from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import tool
 
@@ -25,8 +26,11 @@ async def benchmark_comparison(
     client: GhostfolioClient = config["configurable"]["client"]
     effective_range = range or "max"
 
-    benchmarks = await client.get_benchmarks()
-    performance = await client.get_portfolio_performance(range=effective_range)
+    try:
+        benchmarks = await client.get_benchmarks()
+        performance = await client.get_portfolio_performance(range=effective_range)
+    except httpx.HTTPStatusError as e:
+        return f"Error fetching benchmark data: {e.response.status_code} — {e.response.text}"
     perf_summary = performance.get("performance", {})
 
     lines = [f"**Benchmark Comparison ({effective_range})**\n"]

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import httpx
 from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import tool
 
@@ -19,7 +20,10 @@ async def risk_assessment(
     """
     client: GhostfolioClient = config["configurable"]["client"]
 
-    report = await client.get_portfolio_report()
+    try:
+        report = await client.get_portfolio_report()
+    except httpx.HTTPStatusError as e:
+        return f"Error fetching risk report: {e.response.status_code} — {e.response.text}"
     rules = report.get("rules", {})
 
     if not rules:

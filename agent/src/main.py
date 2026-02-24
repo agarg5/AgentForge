@@ -1,7 +1,9 @@
 import os
+from typing import Optional
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, Header, HTTPException
+from langchain_core.messages import AIMessage, HumanMessage
 from pydantic import BaseModel
 
 from .agent import create_agent
@@ -17,8 +19,14 @@ GHOSTFOLIO_BASE_URL = os.getenv("GHOSTFOLIO_BASE_URL", "http://localhost:3333")
 agent = create_agent()
 
 
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+
 class ChatRequest(BaseModel):
     message: str
+    history: Optional[list[ChatMessage]] = None
 
 
 class ChatResponse(BaseModel):
@@ -37,16 +45,24 @@ async def chat(body: ChatRequest, authorization: str = Header()):
     if not token:
         raise HTTPException(status_code=401, detail="Missing auth token")
 
-    client = GhostfolioClient(base_url=GHOSTFOLIO_BASE_URL, auth_token=token)
+    # Build message history for multi-turn conversation
+    messages = []
+    for msg in body.history or []:
+        if msg.role == "user":
+            messages.append(HumanMessage(content=msg.content))
+        elif msg.role in ("agent", "assistant"):
+            messages.append(AIMessage(content=msg.content))
+    messages.append(HumanMessage(content=body.message))
 
-    result = await agent.ainvoke(
-        {"messages": [{"role": "user", "content": body.message}]},
-        config={"configurable": {"client": client}},
-    )
+    async with GhostfolioClient(base_url=GHOSTFOLIO_BASE_URL, auth_token=token) as client:
+        result = await agent.ainvoke(
+            {"messages": messages},
+            config={"configurable": {"client": client}},
+        )
 
     # Extract the final assistant message
-    messages = result.get("messages", [])
-    for msg in reversed(messages):
+    result_messages = result.get("messages", [])
+    for msg in reversed(result_messages):
         if hasattr(msg, "content") and msg.type == "ai" and msg.content:
             return ChatResponse(content=msg.content)
 

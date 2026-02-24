@@ -34,12 +34,14 @@ export class AiController {
   @Post('chat')
   @UseGuards(AuthGuard('jwt'), HasPermissionGuard)
   public async chat(
-    @Body() body: { message: string },
+    @Body()
+    body: { message: string; history?: { role: string; content: string }[] },
     @Headers('authorization') authorization: string
   ) {
     try {
       return await this.aiService.forwardToAgent({
         message: body.message,
+        history: body.history,
         authToken: authorization
       });
     } catch (error) {

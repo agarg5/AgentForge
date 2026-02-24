@@ -2,16 +2,19 @@ from __future__ import annotations
 
 from typing import Optional
 
+import httpx
 from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import tool
 
 from ..client import GhostfolioClient
 
+VALID_ORDER_TYPES = ("BUY", "SELL", "DIVIDEND", "FEE", "INTEREST", "LIABILITY")
+
 
 @tool
 async def create_order(
     symbol: str,
-    type: str,
+    order_type: str,
     quantity: float,
     unit_price: float,
     currency: str,
@@ -27,7 +30,7 @@ async def create_order(
 
     Args:
         symbol: Ticker symbol (e.g. "AAPL", "VTI").
-        type: Order type. One of: BUY, SELL, DIVIDEND, FEE, INTEREST.
+        order_type: Order type. One of: BUY, SELL, DIVIDEND, FEE, INTEREST, LIABILITY.
         quantity: Number of shares/units. Must be positive.
         unit_price: Price per share/unit. Must be non-negative.
         currency: ISO 4217 currency code (e.g. "USD", "EUR").
@@ -42,12 +45,12 @@ async def create_order(
         return "Error: quantity must be positive."
     if unit_price < 0:
         return "Error: unit_price must be non-negative."
-    if type not in ("BUY", "SELL", "DIVIDEND", "FEE", "INTEREST", "LIABILITY"):
-        return f"Error: invalid order type '{type}'. Must be one of: BUY, SELL, DIVIDEND, FEE, INTEREST, LIABILITY."
+    if order_type.upper() not in VALID_ORDER_TYPES:
+        return f"Error: invalid order type '{order_type}'. Must be one of: {', '.join(VALID_ORDER_TYPES)}."
 
     order_data = {
         "symbol": symbol.upper(),
-        "type": type.upper(),
+        "type": order_type.upper(),
         "quantity": quantity,
         "unitPrice": unit_price,
         "currency": currency.upper(),
@@ -58,7 +61,10 @@ async def create_order(
     if account_id:
         order_data["accountId"] = account_id
 
-    result = await client.create_order(order_data)
+    try:
+        result = await client.create_order(order_data)
+    except httpx.HTTPStatusError as e:
+        return f"Error creating order: {e.response.status_code} — {e.response.text}"
 
     order_id = result.get("id", "N/A")
     return (
@@ -66,7 +72,7 @@ async def create_order(
         f"| Field | Value |\n"
         f"|-------|-------|\n"
         f"| Order ID | {order_id} |\n"
-        f"| Type | {type} |\n"
+        f"| Type | {order_type.upper()} |\n"
         f"| Symbol | {symbol.upper()} |\n"
         f"| Quantity | {quantity} |\n"
         f"| Unit Price | {unit_price} {currency.upper()} |\n"

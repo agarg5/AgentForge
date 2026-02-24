@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Optional
 
+import httpx
 from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import tool
 
@@ -26,11 +27,14 @@ async def transaction_history(
     """
     client: GhostfolioClient = config["configurable"]["client"]
 
-    data = await client.get_transactions(
-        accounts=accounts,
-        asset_classes=asset_classes,
-        take=take,
-    )
+    try:
+        data = await client.get_transactions(
+            accounts=accounts,
+            asset_classes=asset_classes,
+            take=take,
+        )
+    except httpx.HTTPStatusError as e:
+        return f"Error fetching transactions: {e.response.status_code} — {e.response.text}"
 
     activities = data.get("activities", [])
 

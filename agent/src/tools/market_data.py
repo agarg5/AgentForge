@@ -33,11 +33,15 @@ async def market_data(
         return _format_profile(profile)
     except httpx.HTTPStatusError as e:
         if e.response.status_code != 404:
-            raise
+            return f"Error fetching market data: {e.response.status_code} — {e.response.text}"
         # 404 means symbol not found — fall through to search
 
     # Fallback: run a symbol search
-    results = await client.symbol_lookup(query)
+    try:
+        results = await client.symbol_lookup(query)
+    except httpx.HTTPStatusError as e:
+        return f"Error searching for symbol: {e.response.status_code} — {e.response.text}"
+
     items = results.get("items", [])
 
     if not items:
