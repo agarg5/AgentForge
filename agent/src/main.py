@@ -10,6 +10,7 @@ from pydantic import BaseModel
 
 from .agent import create_agent
 from .client import GhostfolioClient
+from .memory import MemoryStore
 from .observability import calculate_cost, configure_tracing, extract_metrics, get_run_config
 from .verification import verify_response
 
@@ -21,9 +22,27 @@ logger = logging.getLogger("agentforge")
 app = FastAPI(title="AgentForge", version="0.1.0")
 
 GHOSTFOLIO_BASE_URL = os.getenv("GHOSTFOLIO_BASE_URL", "http://localhost:3333")
+REDIS_URL = os.getenv("REDIS_URL")
 
 # Create agent once at startup (stateless — per-request state via config)
 agent = create_agent()
+
+# Initialize persistent memory store
+_redis_client = None
+if REDIS_URL:
+    try:
+        import redis.asyncio as aioredis
+
+        _redis_client = aioredis.from_url(REDIS_URL, decode_responses=False)
+        logger.info("Redis memory store: connected (%s)", REDIS_URL.split("@")[-1] if "@" in REDIS_URL else "local")
+    except ImportError:
+        logger.warning("redis package not installed — using in-memory fallback")
+    except Exception as e:
+        logger.warning("Redis connection failed — using in-memory fallback: %s", e)
+else:
+    logger.info("REDIS_URL not set — using in-memory memory store")
+
+memory_store = MemoryStore(redis_client=_redis_client)
 
 # Check LangSmith tracing on startup
 tracing_active = configure_tracing()
@@ -56,7 +75,11 @@ class FeedbackRequest(BaseModel):
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "tracing": tracing_active}
+    return {
+        "status": "ok",
+        "tracing": tracing_active,
+        "memory": "redis" if memory_store.is_persistent else "in-memory",
+    }
 
 
 @app.post("/chat", response_model=ChatResponse)
@@ -80,7 +103,10 @@ async def chat(body: ChatRequest, authorization: str = Header()):
         tags=["chat"],
         metadata={"message_length": len(body.message)},
     )
-    run_config["configurable"] = {}
+    run_config["configurable"] = {
+        "memory": memory_store,
+        "auth_token": token,
+    }
 
     start_time = time.monotonic()
 

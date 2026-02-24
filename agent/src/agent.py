@@ -10,6 +10,7 @@ from .tools.dividends import dividend_analysis
 from .tools.market_data import market_data
 from .tools.portfolio import portfolio_analysis
 from .tools.risk_assessment import risk_assessment
+from .tools.preferences import delete_user_preference, get_user_preferences, save_user_preference
 from .tools.transactions import transaction_history
 
 
@@ -27,6 +28,9 @@ def create_agent():
         account_summary,
         create_order,
         delete_order,
+        get_user_preferences,
+        save_user_preference,
+        delete_user_preference,
     ]
 
     agent = create_react_agent(
