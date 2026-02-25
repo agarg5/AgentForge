@@ -25,6 +25,7 @@ import {
   AccountsResponse,
   ActivitiesResponse,
   ActivityResponse,
+  AiAdminOverviewResponse,
   AiChatResponse,
   AiFeedbackRequest,
   AiPromptResponse,
@@ -858,6 +859,10 @@ export class DataService {
 
   public sendFeedback(feedback: AiFeedbackRequest) {
     return this.http.post<{ status: string }>('/api/v1/ai/feedback', feedback);
+  }
+
+  public getAgentAdminOverview() {
+    return this.http.get<AiAdminOverviewResponse>('/api/v1/ai/admin/overview');
   }
 
   public transferAccountBalance({

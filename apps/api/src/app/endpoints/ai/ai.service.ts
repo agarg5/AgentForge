@@ -5,6 +5,7 @@ import {
   PROPERTY_OPENROUTER_MODEL
 } from '@ghostfolio/common/config';
 import {
+  AiAdminOverviewResponse,
   AiChatResponse,
   AiFeedbackRequest,
   Filter
@@ -83,6 +84,19 @@ export class AiService {
         Authorization: authToken
       }
     });
+
+    if (!response.ok) {
+      this.logger.error(
+        `Agent API returned ${response.status}: ${response.statusText}`
+      );
+      throw new Error(`Agent API error: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
+  public async getAdminOverview(): Promise<AiAdminOverviewResponse> {
+    const response = await fetch(`${this.agentApiUrl}/admin/overview`);
 
     if (!response.ok) {
       this.logger.error(

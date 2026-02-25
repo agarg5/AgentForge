@@ -1,0 +1,268 @@
+@if (isLoading) {
+  <div class="d-flex justify-content-center p-5">
+    <mat-spinner diameter="32"></mat-spinner>
+  </div>
+} @else if (loadError) {
+  <div class="container-fluid p-4">
+    <div class="error-banner">
+      <mat-icon>error_outline</mat-icon>
+      <span
+        >Unable to connect to the agent service. Make sure the agent is
+        running.</span
+      >
+    </div>
+  </div>
+} @else if (data) {
+  <div class="container-fluid p-4">
+    <!-- Agent Config -->
+    <section class="mb-4">
+      <h3 class="section-title">
+        <mat-icon class="section-icon">settings</mat-icon>
+        Agent Configuration
+      </h3>
+      <div class="config-grid">
+        <mat-card class="config-card">
+          <mat-card-content>
+            <div class="config-label">Model</div>
+            <div class="config-value">{{ data.config.model }}</div>
+          </mat-card-content>
+        </mat-card>
+        <mat-card class="config-card">
+          <mat-card-content>
+            <div class="config-label">Max Steps</div>
+            <div class="config-value">{{ data.config.max_agent_steps }}</div>
+          </mat-card-content>
+        </mat-card>
+        <mat-card class="config-card">
+          <mat-card-content>
+            <div class="config-label">History Window</div>
+            <div class="config-value">
+              {{ data.config.max_history_messages }} messages
+            </div>
+          </mat-card-content>
+        </mat-card>
+        <mat-card class="config-card">
+          <mat-card-content>
+            <div class="config-label">Tracing</div>
+            <div class="config-value">
+              <span
+                class="status-dot"
+                [class.active]="data.config.tracing_enabled"
+                [class.inactive]="!data.config.tracing_enabled"
+              ></span>
+              {{ data.config.tracing_enabled ? 'LangSmith' : 'Disabled' }}
+            </div>
+          </mat-card-content>
+        </mat-card>
+        <mat-card class="config-card">
+          <mat-card-content>
+            <div class="config-label">Memory</div>
+            <div class="config-value">{{ data.config.memory_backend }}</div>
+          </mat-card-content>
+        </mat-card>
+        <mat-card class="config-card">
+          <mat-card-content>
+            <div class="config-label">Chat History</div>
+            <div class="config-value">
+              {{ data.config.chat_history_backend }}
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </section>
+
+    <!-- Tools Registry -->
+    <section class="mb-4">
+      <h3 class="section-title">
+        <mat-icon class="section-icon">build</mat-icon>
+        Tools Registry ({{ data.tools.length }})
+      </h3>
+      <table class="tools-table" mat-table [dataSource]="data.tools">
+        <ng-container matColumnDef="name">
+          <th *matHeaderCellDef mat-header-cell>Name</th>
+          <td *matCellDef="let tool" mat-cell>
+            <code>{{ tool.name }}</code>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="type">
+          <th *matHeaderCellDef mat-header-cell>Type</th>
+          <td *matCellDef="let tool" mat-cell>
+            <span
+              class="type-badge"
+              [class.type-read]="tool.type === 'read'"
+              [class.type-write]="tool.type === 'write'"
+            >
+              {{ tool.type }}
+            </span>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="description">
+          <th *matHeaderCellDef mat-header-cell>Description</th>
+          <td *matCellDef="let tool" mat-cell>{{ tool.description }}</td>
+        </ng-container>
+        <tr *matHeaderRowDef="toolColumns" mat-header-row></tr>
+        <tr *matRowDef="let row; columns: toolColumns" mat-row></tr>
+      </table>
+    </section>
+
+    <!-- Verification Layer -->
+    <section class="mb-4">
+      <h3 class="section-title">
+        <mat-icon class="section-icon">verified</mat-icon>
+        Verification Layer ({{ data.verification.total_checks }} checks)
+      </h3>
+      <table
+        class="verification-table"
+        mat-table
+        [dataSource]="data.verification.checks"
+      >
+        <ng-container matColumnDef="name">
+          <th *matHeaderCellDef mat-header-cell>Check</th>
+          <td *matCellDef="let check" mat-cell>
+            <code>{{ check.name }}</code>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="description">
+          <th *matHeaderCellDef mat-header-cell>Description</th>
+          <td *matCellDef="let check" mat-cell>{{ check.description }}</td>
+        </ng-container>
+        <tr *matHeaderRowDef="verificationColumns" mat-header-row></tr>
+        <tr *matRowDef="let row; columns: verificationColumns" mat-row></tr>
+      </table>
+    </section>
+
+    <!-- Eval Framework -->
+    <section class="mb-4">
+      <h3 class="section-title">
+        <mat-icon class="section-icon">science</mat-icon>
+        Evaluation Framework ({{ data.evals.total_cases }} test cases)
+      </h3>
+      <div class="eval-grid">
+        <mat-card class="eval-card">
+          <mat-card-content>
+            <div class="eval-header">Categories</div>
+            <div class="category-list">
+              @for (entry of evalCategoryEntries; track entry.category) {
+                <div class="category-row">
+                  <span class="category-name">{{ entry.category }}</span>
+                  <span class="category-count">{{ entry.count }}</span>
+                </div>
+              }
+            </div>
+          </mat-card-content>
+        </mat-card>
+        <mat-card class="eval-card">
+          <mat-card-content>
+            <div class="eval-header">Scorers</div>
+            <div class="scorer-list">
+              @for (scorer of data.evals.scorers; track scorer) {
+                <div class="scorer-chip">
+                  <mat-icon class="scorer-icon">check_circle</mat-icon>
+                  {{ scorer }}
+                </div>
+              }
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </section>
+
+    <!-- Cost Analysis -->
+    <section class="mb-4">
+      <h3 class="section-title">
+        <mat-icon class="section-icon">payments</mat-icon>
+        Cost Analysis
+      </h3>
+      <div class="cost-grid">
+        <mat-card class="cost-card">
+          <mat-card-content>
+            <div class="cost-label">Model</div>
+            <div class="cost-value">{{ data.cost.model }}</div>
+          </mat-card-content>
+        </mat-card>
+        <mat-card class="cost-card">
+          <mat-card-content>
+            <div class="cost-label">Input Price</div>
+            <div class="cost-value">
+              ${{ data.cost.pricing.input_per_1m_tokens_usd }}/1M tokens
+            </div>
+          </mat-card-content>
+        </mat-card>
+        <mat-card class="cost-card">
+          <mat-card-content>
+            <div class="cost-label">Output Price</div>
+            <div class="cost-value">
+              ${{ data.cost.pricing.output_per_1m_tokens_usd }}/1M tokens
+            </div>
+          </mat-card-content>
+        </mat-card>
+        <mat-card class="cost-card highlight">
+          <mat-card-content>
+            <div class="cost-label">Per Request</div>
+            <div class="cost-value">
+              ${{ data.cost.projections.cost_per_request_usd }}
+            </div>
+          </mat-card-content>
+        </mat-card>
+        <mat-card class="cost-card">
+          <mat-card-content>
+            <div class="cost-label">Daily (100 req)</div>
+            <div class="cost-value">
+              ${{ data.cost.projections.daily_100_requests_usd }}
+            </div>
+          </mat-card-content>
+        </mat-card>
+        <mat-card class="cost-card">
+          <mat-card-content>
+            <div class="cost-label">Monthly (3K req)</div>
+            <div class="cost-value">
+              ${{ data.cost.projections.monthly_3000_requests_usd }}
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </section>
+
+    <!-- Performance Targets -->
+    <section class="mb-4">
+      <h3 class="section-title">
+        <mat-icon class="section-icon">speed</mat-icon>
+        Performance Targets
+      </h3>
+      <div class="targets-grid">
+        <mat-card class="target-card">
+          <mat-card-content>
+            <div class="target-label">Latency</div>
+            <div class="target-value">
+              &lt;{{ data.performance_targets.latency_seconds }}s
+            </div>
+          </mat-card-content>
+        </mat-card>
+        <mat-card class="target-card">
+          <mat-card-content>
+            <div class="target-label">Tool Success Rate</div>
+            <div class="target-value">
+              &gt;{{ data.performance_targets.tool_success_rate * 100 }}%
+            </div>
+          </mat-card-content>
+        </mat-card>
+        <mat-card class="target-card">
+          <mat-card-content>
+            <div class="target-label">Eval Pass Rate</div>
+            <div class="target-value">
+              &gt;{{ data.performance_targets.eval_pass_rate * 100 }}%
+            </div>
+          </mat-card-content>
+        </mat-card>
+        <mat-card class="target-card">
+          <mat-card-content>
+            <div class="target-label">Hallucination Rate</div>
+            <div class="target-value">
+              &lt;{{ data.performance_targets.hallucination_rate * 100 }}%
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </section>
+  </div>
+}

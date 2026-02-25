@@ -40,6 +40,11 @@ export const internalRoutes: Record<string, InternalRoute> = {
     path: 'admin',
     routerLink: ['/admin'],
     subRoutes: {
+      agent: {
+        path: 'agent',
+        routerLink: ['/admin', 'agent'],
+        title: $localize`Agent`
+      },
       jobs: {
         path: 'jobs',
         routerLink: ['/admin', 'jobs'],

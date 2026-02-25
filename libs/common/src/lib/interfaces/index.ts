@@ -44,6 +44,15 @@ import type { ActivityResponse } from './responses/activity-response.interface';
 import type { AdminUserResponse } from './responses/admin-user-response.interface';
 import type { AdminUsersResponse } from './responses/admin-users-response.interface';
 import type {
+  AiAdminOverviewResponse,
+  AiAgentConfig,
+  AiCostModel,
+  AiEvalStats,
+  AiPerformanceTargets,
+  AiToolInfo,
+  AiVerificationInfo
+} from './responses/ai-admin-overview-response.interface';
+import type {
   AiChatResponse,
   AiFeedbackRequest,
   AiMetrics,
@@ -122,11 +131,18 @@ export {
   AdminUser,
   AdminUserResponse,
   AdminUsersResponse,
+  AiAdminOverviewResponse,
+  AiAgentConfig,
   AiChatResponse,
+  AiCostModel,
+  AiEvalStats,
   AiFeedbackRequest,
   AiMetrics,
+  AiPerformanceTargets,
   AiPromptResponse,
+  AiToolInfo,
   AiVerificationCheck,
+  AiVerificationInfo,
   ApiKeyResponse,
   AssertionCredentialJSON,
   AssetClassSelectorOption,

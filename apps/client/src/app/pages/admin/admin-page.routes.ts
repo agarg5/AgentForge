@@ -1,3 +1,4 @@
+import { GfAdminAgentComponent } from '@ghostfolio/client/components/admin-agent/admin-agent.component';
 import { GfAdminJobsComponent } from '@ghostfolio/client/components/admin-jobs/admin-jobs.component';
 import { GfAdminMarketDataComponent } from '@ghostfolio/client/components/admin-market-data/admin-market-data.component';
 import { GfAdminOverviewComponent } from '@ghostfolio/client/components/admin-overview/admin-overview.component';
@@ -18,6 +19,11 @@ export const routes: Routes = [
         path: '',
         component: GfAdminOverviewComponent,
         title: internalRoutes.adminControl.title
+      },
+      {
+        path: internalRoutes.adminControl.subRoutes.agent.path,
+        component: GfAdminAgentComponent,
+        title: internalRoutes.adminControl.subRoutes.agent.title
       },
       {
         path: internalRoutes.adminControl.subRoutes.jobs.path,

@@ -11,7 +11,8 @@ import {
   peopleOutline,
   readerOutline,
   serverOutline,
-  settingsOutline
+  settingsOutline,
+  sparklesOutline
 } from 'ionicons/icons';
 import { DeviceDetectorService } from 'ngx-device-detector';
 
@@ -32,7 +33,8 @@ export class AdminPageComponent implements OnInit {
       peopleOutline,
       readerOutline,
       serverOutline,
-      settingsOutline
+      settingsOutline,
+      sparklesOutline
     });
   }
 
@@ -68,6 +70,11 @@ export class AdminPageComponent implements OnInit {
         iconName: 'people-outline',
         label: internalRoutes.adminControl.subRoutes.users.title,
         routerLink: internalRoutes.adminControl.subRoutes.users.routerLink
+      },
+      {
+        iconName: 'sparkles-outline',
+        label: internalRoutes.adminControl.subRoutes.agent.title,
+        routerLink: internalRoutes.adminControl.subRoutes.agent.routerLink
       }
     ];
   }

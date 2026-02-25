@@ -1,0 +1,296 @@
+:host {
+  display: block;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-bottom: 16px;
+  color: rgba(0, 0, 0, 0.87);
+
+  .section-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    color: rgba(0, 0, 0, 0.54);
+  }
+}
+
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  background: #fef3f2;
+  border: 1px solid #fecdc9;
+  border-radius: 8px;
+  color: #b42318;
+
+  mat-icon {
+    color: #d92d20;
+  }
+}
+
+// Config grid
+.config-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.config-card {
+  .config-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: rgba(0, 0, 0, 0.54);
+    margin-bottom: 4px;
+  }
+
+  .config-value {
+    font-size: 0.95rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+}
+
+.status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+
+  &.active {
+    background-color: #12b76a;
+  }
+
+  &.inactive {
+    background-color: #f04438;
+  }
+}
+
+// Tools table
+.tools-table,
+.verification-table {
+  width: 100%;
+
+  code {
+    font-size: 0.85rem;
+    padding: 2px 6px;
+    background: rgba(0, 0, 0, 0.04);
+    border-radius: 4px;
+  }
+}
+
+.type-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+
+  &.type-read {
+    background: #ecfdf3;
+    color: #027a48;
+  }
+
+  &.type-write {
+    background: #fef3f2;
+    color: #b42318;
+  }
+}
+
+// Eval grid
+.eval-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.eval-card {
+  .eval-header {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: rgba(0, 0, 0, 0.54);
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+}
+
+.category-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  .category-name {
+    font-size: 0.9rem;
+  }
+
+  .category-count {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.54);
+    background: rgba(0, 0, 0, 0.04);
+    padding: 2px 8px;
+    border-radius: 12px;
+  }
+}
+
+.scorer-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+  font-size: 0.9rem;
+
+  .scorer-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: #12b76a;
+  }
+}
+
+// Cost grid
+.cost-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.cost-card {
+  .cost-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: rgba(0, 0, 0, 0.54);
+    margin-bottom: 4px;
+  }
+
+  .cost-value {
+    font-size: 0.95rem;
+    font-weight: 500;
+  }
+
+  &.highlight {
+    border: 1px solid rgba(25, 118, 210, 0.3);
+
+    .cost-value {
+      color: #1976d2;
+    }
+  }
+}
+
+// Targets grid
+.targets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.target-card {
+  .target-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: rgba(0, 0, 0, 0.54);
+    margin-bottom: 4px;
+  }
+
+  .target-value {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #1976d2;
+  }
+}
+
+// Dark mode
+:host-context(.is-dark-theme) {
+  .section-title {
+    color: rgba(255, 255, 255, 0.87);
+
+    .section-icon {
+      color: rgba(255, 255, 255, 0.54);
+    }
+  }
+
+  .error-banner {
+    background: rgba(244, 67, 54, 0.1);
+    border-color: rgba(244, 67, 54, 0.2);
+    color: #f87171;
+
+    mat-icon {
+      color: #f87171;
+    }
+  }
+
+  .config-card,
+  .cost-card,
+  .target-card,
+  .eval-card {
+    .config-label,
+    .cost-label,
+    .target-label,
+    .eval-header {
+      color: rgba(255, 255, 255, 0.54);
+    }
+  }
+
+  .tools-table,
+  .verification-table {
+    code {
+      background: rgba(255, 255, 255, 0.08);
+    }
+  }
+
+  .type-badge {
+    &.type-read {
+      background: rgba(18, 183, 106, 0.15);
+      color: #6ee7b7;
+    }
+
+    &.type-write {
+      background: rgba(244, 67, 54, 0.15);
+      color: #fca5a5;
+    }
+  }
+
+  .category-row {
+    border-bottom-color: rgba(255, 255, 255, 0.06);
+
+    .category-count {
+      color: rgba(255, 255, 255, 0.54);
+      background: rgba(255, 255, 255, 0.08);
+    }
+  }
+
+  .cost-card.highlight {
+    border-color: rgba(100, 181, 246, 0.3);
+
+    .cost-value {
+      color: #64b5f6;
+    }
+  }
+
+  .target-card .target-value {
+    color: #64b5f6;
+  }
+}
