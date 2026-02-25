@@ -619,5 +619,50 @@
     "checks": ["tool_called", "no_hallucination"],
     "expected_patterns": ["MSFT|Microsoft", "TSLA|Tesla"],
     "description": "Multiple stock lookups in one query"
+  },
+  {
+    "id": "news-001",
+    "category": "market_news",
+    "input": "What's happening in the market today?",
+    "expected_tools": ["market_news"],
+    "checks": ["tool_called", "no_hallucination"],
+    "expected_patterns": ["news|market|today|headline"],
+    "description": "Basic market news query"
+  },
+  {
+    "id": "news-002",
+    "category": "market_news",
+    "input": "What's the latest news about AAPL?",
+    "expected_tools": ["market_news"],
+    "checks": ["tool_called", "no_hallucination"],
+    "expected_patterns": ["AAPL|Apple|news"],
+    "description": "Symbol-specific news query"
+  },
+  {
+    "id": "news-003",
+    "category": "market_news",
+    "input": "Any news about technology stocks?",
+    "expected_tools": ["market_news"],
+    "checks": ["tool_called", "no_hallucination"],
+    "expected_patterns": ["tech|technology|news|sector"],
+    "description": "Topic-based news query"
+  },
+  {
+    "id": "news-004",
+    "category": "market_news",
+    "input": "Why did my portfolio drop today? Show me recent market news",
+    "expected_tools": ["portfolio_analysis", "market_news"],
+    "checks": ["multi_tool_called", "no_hallucination"],
+    "expected_patterns": ["portfolio|news|market|drop|decline"],
+    "description": "Multi-tool: portfolio analysis + market news"
+  },
+  {
+    "id": "news-005",
+    "category": "market_news",
+    "input": "What's the latest on Tesla and its current stock price?",
+    "expected_tools": ["market_news", "market_data"],
+    "checks": ["multi_tool_called", "no_hallucination"],
+    "expected_patterns": ["TSLA|Tesla|price|news"],
+    "description": "Multi-tool: market news + market data lookup"
   }
 ]
