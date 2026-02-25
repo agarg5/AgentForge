@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import json
 import os
 from datetime import datetime
+from pathlib import Path
 from typing import Optional
 
 import httpx
@@ -9,6 +11,7 @@ from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import tool
 
 _ALPHA_VANTAGE_BASE_URL = "https://www.alphavantage.co/query"
+_MOCK_DATA_PATH = Path(__file__).resolve().parent / "mock_news_data.json"
 
 _VALID_TOPICS = [
     "blockchain",
@@ -50,54 +53,68 @@ async def market_news(
                energy_transportation, finance, life_sciences, manufacturing,
                real_estate, retail_wholesale, technology.
     """
-    api_key = os.environ.get("ALPHA_VANTAGE_API_KEY")
-    if not api_key:
-        return (
-            "Error: ALPHA_VANTAGE_API_KEY environment variable is not set. "
-            "Please configure it to use the market news tool."
-        )
-
-    params: dict[str, str] = {
-        "function": "NEWS_SENTIMENT",
-        "apikey": api_key,
-    }
-
-    if symbol:
-        params["tickers"] = symbol.upper()
-    if topic:
-        if topic.lower() not in _VALID_TOPICS:
+    # Mock mode: return cached data to avoid burning API quota during evals
+    if os.environ.get("MOCK_NEWS", "").lower() in ("1", "true", "yes"):
+        with open(_MOCK_DATA_PATH) as f:
+            data = json.load(f)
+        # Filter by symbol if requested
+        if symbol:
+            data["feed"] = [
+                a for a in data.get("feed", [])
+                if any(
+                    ts.get("ticker", "").upper() == symbol.upper()
+                    for ts in a.get("ticker_sentiment", [])
+                )
+            ] or data["feed"][:2]  # fallback to top 2 if no match
+    else:
+        api_key = os.environ.get("ALPHA_VANTAGE_API_KEY")
+        if not api_key:
             return (
-                f"Error: Invalid topic '{topic}'. Valid topics are: "
-                + ", ".join(_VALID_TOPICS)
+                "Error: ALPHA_VANTAGE_API_KEY environment variable is not set. "
+                "Please configure it to use the market news tool."
             )
-        params["topics"] = topic.lower()
 
-    try:
-        async with httpx.AsyncClient(timeout=30) as client:
-            response = await client.get(_ALPHA_VANTAGE_BASE_URL, params=params)
-            response.raise_for_status()
-            data = response.json()
-    except httpx.HTTPStatusError as e:
-        return f"Error fetching news: HTTP {e.response.status_code}"
-    except httpx.RequestError as e:
-        return f"Error fetching news: {e}"
-    except Exception as e:
-        return f"Error fetching news: {e}"
+        params: dict[str, str] = {
+            "function": "NEWS_SENTIMENT",
+            "apikey": api_key,
+        }
 
-    if "Error Message" in data:
-        return f"Alpha Vantage API error: {data['Error Message']}"
+        if symbol:
+            params["tickers"] = symbol.upper()
+        if topic:
+            if topic.lower() not in _VALID_TOPICS:
+                return (
+                    f"Error: Invalid topic '{topic}'. Valid topics are: "
+                    + ", ".join(_VALID_TOPICS)
+                )
+            params["topics"] = topic.lower()
 
-    # Alpha Vantage returns "Note" or "Information" on rate limit (25/day free tier)
-    if "Note" in data:
-        return (
-            "Market news is temporarily unavailable (API rate limit reached). "
-            "Please try again later."
-        )
-    if "Information" in data:
-        return (
-            "Market news is temporarily unavailable (API rate limit reached). "
-            "Please try again later."
-        )
+        try:
+            async with httpx.AsyncClient(timeout=30) as client:
+                response = await client.get(_ALPHA_VANTAGE_BASE_URL, params=params)
+                response.raise_for_status()
+                data = response.json()
+        except httpx.HTTPStatusError as e:
+            return f"Error fetching news: HTTP {e.response.status_code}"
+        except httpx.RequestError as e:
+            return f"Error fetching news: {e}"
+        except Exception as e:
+            return f"Error fetching news: {e}"
+
+        if "Error Message" in data:
+            return f"Alpha Vantage API error: {data['Error Message']}"
+
+        # Alpha Vantage returns "Note" or "Information" on rate limit (25/day free tier)
+        if "Note" in data:
+            return (
+                "Market news is temporarily unavailable (API rate limit reached). "
+                "Please try again later."
+            )
+        if "Information" in data:
+            return (
+                "Market news is temporarily unavailable (API rate limit reached). "
+                "Please try again later."
+            )
 
     feed = data.get("feed", [])
     if not feed:

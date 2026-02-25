@@ -73,20 +73,20 @@ cd agent && .venv/bin/python -m pytest tests/ -v
 ```
 230 tests, 2 pre-existing failures in test_tools.py (unrelated to agent logic).
 
-### Live evals against deployed agent (Braintrust)
+### Live evals against deployed agent
 ```bash
 cd agent
 
 # 1. Get a Ghostfolio auth token
-export SECURITY_TOKEN="<from Ghostfolio Settings → Security Token>"
+export SECURITY_TOKEN="<from Ghostfolio Settings -> Security Token>"
 export AGENT_AUTH_TOKEN=$(curl -s -X POST "https://ghostfolio-production-574b.up.railway.app/api/v1/auth/anonymous" \
   -H "Content-Type: application/json" \
   -d "{\"accessToken\": \"$SECURITY_TOKEN\"}" | python3 -c "import sys,json; print(json.load(sys.stdin)['authToken'])")
 
-# 2. Run evals (results go to braintrust.dev dashboard)
-export BRAINTRUST_API_KEY="<from braintrust.dev>"
+# 2. Run evals (results print to console, traces go to LangSmith)
 export AGENT_BASE_URL="https://agent-production-b7bc.up.railway.app"
-.venv/bin/python evals/bt_eval.py
+export MOCK_NEWS=true  # avoid Alpha Vantage rate limits
+.venv/bin/python evals/eval_runner.py
 ```
 
 ### Eval datasets (150 total cases)

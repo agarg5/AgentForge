@@ -1,0 +1,58 @@
+{
+  "feed": [
+    {
+      "title": "S&P 500 Edges Higher as Tech Rally Continues",
+      "source": "Reuters",
+      "overall_sentiment_label": "Bullish",
+      "overall_sentiment_score": "0.34",
+      "time_published": "20250225T143000",
+      "summary": "The S&P 500 rose 0.4% as technology stocks continued their upward momentum, led by gains in semiconductor and cloud computing companies.",
+      "ticker_sentiment": [
+        {"ticker": "AAPL", "relevance_score": "0.85", "ticker_sentiment_label": "Bullish"},
+        {"ticker": "MSFT", "relevance_score": "0.78", "ticker_sentiment_label": "Bullish"},
+        {"ticker": "GOOGL", "relevance_score": "0.72", "ticker_sentiment_label": "Somewhat-Bullish"},
+        {"ticker": "TSLA", "relevance_score": "0.65", "ticker_sentiment_label": "Neutral"}
+      ]
+    },
+    {
+      "title": "Federal Reserve Signals Patience on Rate Cuts",
+      "source": "Bloomberg",
+      "overall_sentiment_label": "Neutral",
+      "overall_sentiment_score": "0.02",
+      "time_published": "20250225T120000",
+      "summary": "Federal Reserve officials indicated they are in no rush to cut interest rates, citing persistent inflation concerns and a resilient labor market.",
+      "ticker_sentiment": []
+    },
+    {
+      "title": "Apple Reports Record Services Revenue in Q1",
+      "source": "CNBC",
+      "overall_sentiment_label": "Bullish",
+      "overall_sentiment_score": "0.45",
+      "time_published": "20250225T100000",
+      "summary": "Apple Inc. reported record services revenue of $23.1 billion in Q1 2025, driven by strong growth in App Store, Apple Music, and iCloud subscriptions.",
+      "ticker_sentiment": [
+        {"ticker": "AAPL", "relevance_score": "0.95", "ticker_sentiment_label": "Bullish"}
+      ]
+    },
+    {
+      "title": "Tesla Announces New Battery Technology Partnership",
+      "source": "MarketWatch",
+      "overall_sentiment_label": "Somewhat-Bullish",
+      "overall_sentiment_score": "0.22",
+      "time_published": "20250224T160000",
+      "summary": "Tesla signed a strategic partnership with a leading battery manufacturer to develop next-generation solid-state batteries for its EV lineup.",
+      "ticker_sentiment": [
+        {"ticker": "TSLA", "relevance_score": "0.92", "ticker_sentiment_label": "Bullish"}
+      ]
+    },
+    {
+      "title": "Energy Sector Under Pressure Amid Oil Price Decline",
+      "source": "Financial Times",
+      "overall_sentiment_label": "Bearish",
+      "overall_sentiment_score": "-0.28",
+      "time_published": "20250224T140000",
+      "summary": "Energy stocks fell broadly as crude oil prices dropped 3% on concerns about weakening global demand and rising OPEC+ production.",
+      "ticker_sentiment": []
+    }
+  ]
+}
