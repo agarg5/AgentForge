@@ -12,22 +12,22 @@
         <div class="suggestion-chips">
           <button
             class="chip"
-            (click)="onSuggestionClick('How is my portfolio performing?')"
             i18n
+            (click)="onSuggestionClick('How is my portfolio performing?')"
           >
             How is my portfolio performing?
           </button>
           <button
             class="chip"
-            (click)="onSuggestionClick('Show my asset allocation')"
             i18n
+            (click)="onSuggestionClick('Show my asset allocation')"
           >
             Show my asset allocation
           </button>
           <button
             class="chip"
-            (click)="onSuggestionClick('What dividends have I earned?')"
             i18n
+            (click)="onSuggestionClick('What dividends have I earned?')"
           >
             What dividends have I earned?
           </button>
@@ -55,7 +55,9 @@
                 (click)="toggleToolsExpanded(message)"
               >
                 <mat-icon class="tools-icon">build</mat-icon>
-                Used {{ message.toolsUsed.length }} tool{{ message.toolsUsed.length > 1 ? 's' : '' }}
+                Used {{ message.toolsUsed.length }} tool{{
+                  message.toolsUsed.length > 1 ? 's' : ''
+                }}
                 <mat-icon class="expand-icon">{{
                   message.toolsExpanded ? 'expand_less' : 'expand_more'
                 }}</mat-icon>
@@ -69,13 +71,91 @@
               }
             </div>
           }
-          <div class="message-bubble" [class.markdown-content]="message.role === 'agent'">
+          <div
+            class="message-bubble"
+            [class.markdown-content]="message.role === 'agent'"
+          >
             @if (message.contentHtml) {
               <div [innerHTML]="message.contentHtml"></div>
             } @else {
               {{ message.content }}
             }
           </div>
+          @if (message.verification?.length) {
+            <div class="verification-indicator">
+              <button
+                class="verification-toggle"
+                (click)="toggleVerificationExpanded(message)"
+              >
+                <mat-icon class="verification-icon">verified</mat-icon>
+                {{ message.verification.length }} verification check{{
+                  message.verification.length > 1 ? 's' : ''
+                }}
+                <mat-icon class="expand-icon">{{
+                  message.verificationExpanded ? 'expand_less' : 'expand_more'
+                }}</mat-icon>
+              </button>
+              @if (message.verificationExpanded) {
+                <div class="verification-checks">
+                  @for (
+                    check of message.verification;
+                    track check.name;
+                    let i = $index
+                  ) {
+                    @if (i < (message.verificationAnimatedCount ?? 0)) {
+                      <div
+                        class="verification-row"
+                        [class.check-failed]="!check.passed"
+                        [class.check-passed]="check.passed"
+                      >
+                        <mat-icon class="check-icon">{{
+                          check.passed ? 'check_circle' : 'cancel'
+                        }}</mat-icon>
+                        <span class="check-name">{{ check.name }}</span>
+                        <span
+                          class="check-detail"
+                          [matTooltip]="check.detail"
+                          >{{ check.detail }}</span
+                        >
+                      </div>
+                    }
+                  }
+                </div>
+              }
+            </div>
+          }
+          @if (
+            message.role === 'agent' &&
+            (message.latencySeconds || message.runId)
+          ) {
+            <div class="message-footer">
+              @if (message.latencySeconds) {
+                <span class="latency-label"
+                  >{{ message.latencySeconds | number: '1.1-1' }}s</span
+                >
+              }
+              @if (message.runId) {
+                <div class="feedback-buttons">
+                  <button
+                    class="feedback-btn"
+                    matTooltip="Helpful"
+                    [class.active]="message.feedbackScore === 1"
+                    (click)="onFeedback(message, 1)"
+                  >
+                    <mat-icon>thumb_up</mat-icon>
+                  </button>
+                  <button
+                    class="feedback-btn"
+                    matTooltip="Not helpful"
+                    [class.active]="message.feedbackScore === -1"
+                    (click)="onFeedback(message, -1)"
+                  >
+                    <mat-icon>thumb_down</mat-icon>
+                  </button>
+                </div>
+              }
+            </div>
+          }
         </div>
       </div>
     }
@@ -96,9 +176,9 @@
     @if (messages.length > 0) {
       <button
         class="clear-chat-button"
-        (click)="onClearChat()"
-        [disabled]="isLoading"
         i18n
+        [disabled]="isLoading"
+        (click)="onClearChat()"
       >
         <mat-icon>delete_outline</mat-icon>
         Clear Chat

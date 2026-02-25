@@ -25,6 +25,8 @@ import {
   AccountsResponse,
   ActivitiesResponse,
   ActivityResponse,
+  AiChatResponse,
+  AiFeedbackRequest,
   AiPromptResponse,
   ApiKeyResponse,
   AssetProfileIdentifier,
@@ -841,12 +843,7 @@ export class DataService {
   }
 
   public sendChatMessage({ message }: { message: string }) {
-    return this.http.post<{
-      role: 'agent';
-      content: string;
-      tools_used?: string[];
-      tool_count?: number;
-    }>('/api/v1/ai/chat', { message });
+    return this.http.post<AiChatResponse>('/api/v1/ai/chat', { message });
   }
 
   public getChatHistory() {
@@ -857,6 +854,10 @@ export class DataService {
 
   public clearChatHistory() {
     return this.http.delete('/api/v1/ai/chat/history');
+  }
+
+  public sendFeedback(feedback: AiFeedbackRequest) {
+    return this.http.post<{ status: string }>('/api/v1/ai/feedback', feedback);
   }
 
   public transferAccountBalance({

@@ -1,7 +1,10 @@
 import { HasPermission } from '@ghostfolio/api/decorators/has-permission.decorator';
 import { HasPermissionGuard } from '@ghostfolio/api/guards/has-permission.guard';
 import { ApiService } from '@ghostfolio/api/services/api/api.service';
-import { AiPromptResponse } from '@ghostfolio/common/interfaces';
+import {
+  AiFeedbackRequest,
+  AiPromptResponse
+} from '@ghostfolio/common/interfaces';
 import { permissions } from '@ghostfolio/common/permissions';
 import type { AiPromptMode, RequestWithUser } from '@ghostfolio/common/types';
 
@@ -55,9 +58,7 @@ export class AiController {
 
   @Get('chat/history')
   @UseGuards(AuthGuard('jwt'), HasPermissionGuard)
-  public async getChatHistory(
-    @Headers('authorization') authorization: string
-  ) {
+  public async getChatHistory(@Headers('authorization') authorization: string) {
     try {
       return await this.aiService.getChatHistory({
         authToken: authorization
@@ -78,6 +79,25 @@ export class AiController {
     try {
       return await this.aiService.clearChatHistory({
         authToken: authorization
+      });
+    } catch (error) {
+      throw new HttpException(
+        error.message ?? 'Agent unavailable',
+        error.status ?? HttpStatus.BAD_GATEWAY
+      );
+    }
+  }
+
+  @Post('feedback')
+  @UseGuards(AuthGuard('jwt'), HasPermissionGuard)
+  public async submitFeedback(
+    @Body() body: AiFeedbackRequest,
+    @Headers('authorization') authorization: string
+  ) {
+    try {
+      return await this.aiService.submitFeedback({
+        authToken: authorization,
+        feedback: body
       });
     } catch (error) {
       throw new HttpException(

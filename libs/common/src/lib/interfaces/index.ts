@@ -43,6 +43,12 @@ import type { ActivitiesResponse } from './responses/activities-response.interfa
 import type { ActivityResponse } from './responses/activity-response.interface';
 import type { AdminUserResponse } from './responses/admin-user-response.interface';
 import type { AdminUsersResponse } from './responses/admin-users-response.interface';
+import type {
+  AiChatResponse,
+  AiFeedbackRequest,
+  AiMetrics,
+  AiVerificationCheck
+} from './responses/ai-chat-response.interface';
 import type { AiPromptResponse } from './responses/ai-prompt-response.interface';
 import type { ApiKeyResponse } from './responses/api-key-response.interface';
 import type { AssetResponse } from './responses/asset-response.interface';
@@ -116,7 +122,11 @@ export {
   AdminUser,
   AdminUserResponse,
   AdminUsersResponse,
+  AiChatResponse,
+  AiFeedbackRequest,
+  AiMetrics,
   AiPromptResponse,
+  AiVerificationCheck,
   ApiKeyResponse,
   AssertionCredentialJSON,
   AssetClassSelectorOption,

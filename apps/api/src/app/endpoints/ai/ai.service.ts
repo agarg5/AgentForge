@@ -4,7 +4,11 @@ import {
   PROPERTY_API_KEY_OPENROUTER,
   PROPERTY_OPENROUTER_MODEL
 } from '@ghostfolio/common/config';
-import { Filter } from '@ghostfolio/common/interfaces';
+import {
+  AiChatResponse,
+  AiFeedbackRequest,
+  Filter
+} from '@ghostfolio/common/interfaces';
 import type { AiPromptMode } from '@ghostfolio/common/types';
 
 import { Injectable, Logger } from '@nestjs/common';
@@ -26,7 +30,7 @@ export class AiService {
     authToken: string;
     history?: { role: string; content: string }[];
     message: string;
-  }): Promise<{ role: string; content: string }> {
+  }): Promise<AiChatResponse> {
     const response = await fetch(`${this.agentApiUrl}/chat`, {
       method: 'POST',
       headers: {
@@ -78,6 +82,32 @@ export class AiService {
       headers: {
         Authorization: authToken
       }
+    });
+
+    if (!response.ok) {
+      this.logger.error(
+        `Agent API returned ${response.status}: ${response.statusText}`
+      );
+      throw new Error(`Agent API error: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
+  public async submitFeedback({
+    authToken,
+    feedback
+  }: {
+    authToken: string;
+    feedback: AiFeedbackRequest;
+  }): Promise<{ status: string }> {
+    const response = await fetch(`${this.agentApiUrl}/feedback`, {
+      method: 'POST',
+      headers: {
+        Authorization: authToken,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(feedback)
     });
 
     if (!response.ok) {
