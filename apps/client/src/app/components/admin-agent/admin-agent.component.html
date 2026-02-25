@@ -223,6 +223,26 @@
       </div>
     </section>
 
+    <!-- Observability -->
+    @if (data.observability) {
+      <section class="mb-4">
+        <h3 class="section-title">
+          <mat-icon class="section-icon">monitoring</mat-icon>
+          Observability
+        </h3>
+        <div class="config-grid">
+          @for (item of observabilityEntries; track item.key) {
+            <mat-card class="config-card">
+              <mat-card-content>
+                <div class="config-label">{{ item.key }}</div>
+                <div class="config-value">{{ item.value }}</div>
+              </mat-card-content>
+            </mat-card>
+          }
+        </div>
+      </section>
+    }
+
     <!-- Performance Targets -->
     <section class="mb-4">
       <h3 class="section-title">
@@ -232,9 +252,17 @@
       <div class="targets-grid">
         <mat-card class="target-card">
           <mat-card-content>
-            <div class="target-label">Latency</div>
+            <div class="target-label">Single-Tool Latency</div>
             <div class="target-value">
               &lt;{{ data.performance_targets.latency_seconds }}s
+            </div>
+          </mat-card-content>
+        </mat-card>
+        <mat-card class="target-card">
+          <mat-card-content>
+            <div class="target-label">Multi-Step Latency</div>
+            <div class="target-value">
+              &lt;{{ data.performance_targets.multi_step_latency_seconds }}s
             </div>
           </mat-card-content>
         </mat-card>
@@ -259,6 +287,14 @@
             <div class="target-label">Hallucination Rate</div>
             <div class="target-value">
               &lt;{{ data.performance_targets.hallucination_rate * 100 }}%
+            </div>
+          </mat-card-content>
+        </mat-card>
+        <mat-card class="target-card">
+          <mat-card-content>
+            <div class="target-label">Verification Accuracy</div>
+            <div class="target-value">
+              &gt;{{ data.performance_targets.verification_accuracy * 100 }}%
             </div>
           </mat-card-content>
         </mat-card>

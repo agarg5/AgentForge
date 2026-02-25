@@ -31,9 +31,11 @@ export interface AiCostModel {
 
 export interface AiPerformanceTargets {
   latency_seconds: number;
+  multi_step_latency_seconds: number;
   tool_success_rate: number;
   eval_pass_rate: number;
   hallucination_rate: number;
+  verification_accuracy: number;
 }
 
 export interface AiAgentConfig {
@@ -54,5 +56,6 @@ export interface AiAdminOverviewResponse {
   evals: AiEvalStats;
   cost: AiCostModel;
   performance_targets: AiPerformanceTargets;
+  observability?: Record<string, string>;
   config: AiAgentConfig;
 }

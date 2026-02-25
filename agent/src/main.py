@@ -13,7 +13,7 @@ from langgraph.errors import GraphRecursionError
 from .agent import MAX_AGENT_STEPS, create_agent
 from .client import GhostfolioClient
 from .memory import ChatHistoryStore, MemoryStore
-from .observability import calculate_cost, configure_tracing, extract_metrics, get_run_config
+from .observability import TimingCallback, calculate_cost, configure_tracing, extract_metrics, get_run_config
 from .verification import verify_response
 
 load_dotenv()
@@ -158,6 +158,10 @@ async def chat(body: ChatRequest, authorization: str = Header()):
 
     start_time = time.monotonic()
     run_id = run_config.get("run_id")
+    timing_cb = TimingCallback()
+
+    # Attach timing callback alongside any existing callbacks
+    run_config.setdefault("callbacks", []).append(timing_cb)
 
     try:
         async with GhostfolioClient(base_url=GHOSTFOLIO_BASE_URL, auth_token=token) as client:
@@ -188,6 +192,7 @@ async def chat(body: ChatRequest, authorization: str = Header()):
     # Extract token usage and tool call metrics
     metrics = extract_metrics(result)
     metrics["latency_seconds"] = round(elapsed, 3)
+    metrics["latency_breakdown"] = timing_cb.get_breakdown()
     metrics["cost"] = calculate_cost(
         input_tokens=metrics["input_tokens"],
         output_tokens=metrics["output_tokens"],
@@ -337,9 +342,21 @@ async def admin_overview():
     # Performance targets (from assignment.pdf)
     performance_targets = {
         "latency_seconds": 5,
+        "multi_step_latency_seconds": 15,
         "tool_success_rate": 0.95,
         "eval_pass_rate": 0.80,
         "hallucination_rate": 0.05,
+        "verification_accuracy": 0.90,
+    }
+
+    # Observability features
+    observability = {
+        "tracing": "LangSmith (full trace hierarchy with run_id correlation)",
+        "latency_breakdown": "Total, LLM call time, and tool execution time tracked per request",
+        "token_tracking": "Input/output/total tokens per request",
+        "cost_tracking": "Per-request USD cost from token counts and model pricing",
+        "user_feedback": "Thumbs up/down linked to LangSmith traces via run_id",
+        "error_logging": "Structured error logging with run_id and latency context",
     }
 
     # Agent config
@@ -358,6 +375,7 @@ async def admin_overview():
         "evals": eval_stats,
         "cost": cost_model,
         "performance_targets": performance_targets,
+        "observability": observability,
         "config": config,
     }
 
