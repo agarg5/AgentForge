@@ -1,3 +1,4 @@
+import { AiVerificationCheck } from '@ghostfolio/common/interfaces';
 import { DataService } from '@ghostfolio/ui/services';
 
 import { CommonModule } from '@angular/common';
@@ -16,6 +17,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { marked } from 'marked';
 
@@ -25,6 +27,12 @@ interface ChatMessage {
   contentHtml?: SafeHtml;
   toolsUsed?: string[];
   toolsExpanded?: boolean;
+  runId?: string;
+  latencySeconds?: number;
+  verification?: AiVerificationCheck[];
+  verificationExpanded?: boolean;
+  verificationAnimatedCount?: number;
+  feedbackScore?: number;
   timestamp: Date;
 }
 
@@ -38,7 +46,8 @@ interface ChatMessage {
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatTooltipModule
   ],
   selector: 'gf-chat-page',
   styleUrls: ['./chat-page.scss'],
@@ -124,16 +133,29 @@ export class GfChatPageComponent implements AfterViewChecked, OnInit {
 
     this.dataService.sendChatMessage({ message: content }).subscribe({
       next: (response) => {
-        this.messages.push({
+        const verification = response.metrics?.verification?.length
+          ? response.metrics.verification
+          : undefined;
+
+        const agentMessage: ChatMessage = {
           content: response.content,
           contentHtml: this.sanitizer.bypassSecurityTrustHtml(
             marked.parse(response.content) as string
           ),
           role: 'agent',
-          toolsUsed: response.tools_used?.length ? response.tools_used : undefined,
+          toolsUsed: response.tools_used?.length
+            ? response.tools_used
+            : undefined,
           toolsExpanded: false,
+          runId: response.run_id,
+          latencySeconds: response.metrics?.latency_seconds,
+          verification,
+          verificationExpanded: false,
+          verificationAnimatedCount: 0,
           timestamp: new Date()
-        });
+        };
+
+        this.messages.push(agentMessage);
 
         this.isLoading = false;
         this.shouldScrollToBottom = true;
@@ -161,6 +183,54 @@ export class GfChatPageComponent implements AfterViewChecked, OnInit {
   public onSuggestionClick(suggestion: string) {
     this.messageInput = suggestion;
     this.onSendMessage();
+  }
+
+  public toggleVerificationExpanded(message: ChatMessage) {
+    message.verificationExpanded = !message.verificationExpanded;
+
+    if (message.verificationExpanded) {
+      this.animateVerificationChecks(message);
+    }
+
+    this.changeDetectorRef.markForCheck();
+  }
+
+  public onFeedback(message: ChatMessage, score: number) {
+    if (!message.runId || message.feedbackScore === score) {
+      return;
+    }
+
+    const previousScore = message.feedbackScore;
+    message.feedbackScore = score;
+    this.changeDetectorRef.markForCheck();
+
+    this.dataService.sendFeedback({ run_id: message.runId, score }).subscribe({
+      error: () => {
+        message.feedbackScore = previousScore;
+        this.changeDetectorRef.markForCheck();
+      }
+    });
+  }
+
+  private animateVerificationChecks(message: ChatMessage) {
+    message.verificationAnimatedCount = 0;
+
+    const total = message.verification?.length ?? 0;
+
+    if (total === 0) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      message.verificationAnimatedCount =
+        (message.verificationAnimatedCount ?? 0) + 1;
+
+      this.changeDetectorRef.markForCheck();
+
+      if ((message.verificationAnimatedCount ?? 0) >= total) {
+        clearInterval(interval);
+      }
+    }, 150);
   }
 
   private scrollToBottom() {
