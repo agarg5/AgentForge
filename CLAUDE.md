@@ -65,6 +65,47 @@ Header: "Authorization: Bearer <authToken>"
 - LangSmith traces for all agent interactions
 - Deploy to Railway for public access
 
+## Running Tests & Evals
+
+### Unit tests (offline, no API calls)
+```bash
+cd agent && .venv/bin/python -m pytest tests/ -v
+```
+230 tests, 2 pre-existing failures in test_tools.py (unrelated to agent logic).
+
+### Live evals against deployed agent (Braintrust)
+```bash
+cd agent
+
+# 1. Get a Ghostfolio auth token
+export SECURITY_TOKEN="<from Ghostfolio Settings → Security Token>"
+export AGENT_AUTH_TOKEN=$(curl -s -X POST "https://ghostfolio-production-574b.up.railway.app/api/v1/auth/anonymous" \
+  -H "Content-Type: application/json" \
+  -d "{\"accessToken\": \"$SECURITY_TOKEN\"}" | python3 -c "import sys,json; print(json.load(sys.stdin)['authToken'])")
+
+# 2. Run evals (results go to braintrust.dev dashboard)
+export BRAINTRUST_API_KEY="<from braintrust.dev>"
+export AGENT_BASE_URL="https://agent-production-b7bc.up.railway.app"
+.venv/bin/python evals/bt_eval.py
+```
+
+### Eval datasets (150 total cases)
+- `evals/datasets/cases.json` — 82 core functional cases
+- `evals/datasets/guardrails_cases.json` — 20 adversarial/jailbreak cases
+- `evals/datasets/golden_set.yaml` — 26 curated rubric cases
+- `evals/datasets/preference_cases.json` — 22 preference memory cases
+
+### Assignment performance targets
+- Single-tool latency: <5s
+- Multi-step latency: <15s
+- Tool success rate: >95%
+- Eval pass rate: >80%
+- Hallucination rate: <5%
+- Verification accuracy: >90%
+
+## Chat in Production (Railway)
+For `/en/chat` to work, deploy the **Agent** as a separate Railway service and set **AGENT_API_URL** on the Ghostfolio API to the agent’s URL. See `agent/RAILWAY_DEPLOYMENT.md`.
+
 ## Verification Rules
 - All ticker symbols must resolve to real securities
 - Portfolio values must match Ghostfolio's computed values
