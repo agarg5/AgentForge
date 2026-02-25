@@ -23,6 +23,8 @@ interface ChatMessage {
   role: 'user' | 'agent';
   content: string;
   contentHtml?: SafeHtml;
+  toolsUsed?: string[];
+  toolsExpanded?: boolean;
   timestamp: Date;
 }
 
@@ -128,6 +130,8 @@ export class GfChatPageComponent implements AfterViewChecked, OnInit {
             marked.parse(response.content) as string
           ),
           role: 'agent',
+          toolsUsed: response.tools_used?.length ? response.tools_used : undefined,
+          toolsExpanded: false,
           timestamp: new Date()
         });
 
@@ -147,6 +151,11 @@ export class GfChatPageComponent implements AfterViewChecked, OnInit {
         this.changeDetectorRef.markForCheck();
       }
     });
+  }
+
+  public toggleToolsExpanded(message: ChatMessage) {
+    message.toolsExpanded = !message.toolsExpanded;
+    this.changeDetectorRef.markForCheck();
   }
 
   public onSuggestionClick(suggestion: string) {

@@ -47,12 +47,35 @@
             <mat-icon>auto_awesome</mat-icon>
           </div>
         }
-        <div class="message-bubble" [class.markdown-content]="message.role === 'agent'">
-          @if (message.contentHtml) {
-            <div [innerHTML]="message.contentHtml"></div>
-          } @else {
-            {{ message.content }}
+        <div class="message-content-wrapper">
+          @if (message.toolsUsed?.length) {
+            <div class="tools-indicator">
+              <button
+                class="tools-toggle"
+                (click)="toggleToolsExpanded(message)"
+              >
+                <mat-icon class="tools-icon">build</mat-icon>
+                Used {{ message.toolsUsed.length }} tool{{ message.toolsUsed.length > 1 ? 's' : '' }}
+                <mat-icon class="expand-icon">{{
+                  message.toolsExpanded ? 'expand_less' : 'expand_more'
+                }}</mat-icon>
+              </button>
+              @if (message.toolsExpanded) {
+                <div class="tools-chips">
+                  @for (tool of message.toolsUsed; track tool) {
+                    <span class="tool-chip">{{ tool }}</span>
+                  }
+                </div>
+              }
+            </div>
           }
+          <div class="message-bubble" [class.markdown-content]="message.role === 'agent'">
+            @if (message.contentHtml) {
+              <div [innerHTML]="message.contentHtml"></div>
+            } @else {
+              {{ message.content }}
+            }
+          </div>
         </div>
       </div>
     }
