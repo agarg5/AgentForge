@@ -39,11 +39,13 @@ async def risk_assessment(
 
     lines = ["**Portfolio Risk Assessment (X-Ray)**\n"]
 
-    # First pass: count totals and collect warnings
+    # First pass: count totals and collect warnings (skip inactive rules)
     for _category, category_rules in rules.items():
         if not category_rules:
             continue
         for rule in category_rules:
+            if not rule.get("isActive", False):
+                continue
             total_rules += 1
             value = rule.get("value", False)
             if value:
@@ -69,6 +71,8 @@ async def risk_assessment(
         lines.append("|------|--------|---------|")
 
         for rule in category_rules:
+            if not rule.get("isActive", False):
+                continue
             name = rule.get("name", "Unknown")
             value = rule.get("value", False)
             evaluation = rule.get("evaluation", "")
