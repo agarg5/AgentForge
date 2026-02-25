@@ -4,6 +4,9 @@
 /out-tsc
 /tmp
 
+# git worktrees
+.worktrees/
+
 # dependencies
 /node_modules
 npm-debug.log
