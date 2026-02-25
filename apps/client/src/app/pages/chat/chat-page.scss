@@ -337,3 +337,80 @@
     width: 1.2rem;
   }
 }
+
+// Dark theme overrides
+// Ghostfolio defines separate -dark palette variables rather than reassigning the base ones.
+
+:host-context(.theme-dark) {
+  .empty-state {
+    h2 {
+      color: rgba(var(--palette-foreground-text-dark), var(--palette-foreground-text-dark-alpha));
+    }
+
+    p {
+      color: rgba(var(--palette-foreground-secondary-text-dark), var(--palette-foreground-secondary-text-dark-alpha));
+    }
+  }
+
+  .suggestion-chips .chip {
+    border-color: rgba(var(--palette-foreground-divider-dark), var(--palette-foreground-divider-dark-alpha));
+    color: rgba(var(--palette-foreground-secondary-text-dark), var(--palette-foreground-secondary-text-dark-alpha));
+
+    &:hover {
+      background: rgba(var(--palette-background-hover-dark), var(--palette-background-hover-dark-alpha, 0.04));
+      color: rgba(var(--palette-foreground-text-dark), var(--palette-foreground-text-dark-alpha));
+    }
+  }
+
+  .message-bubble {
+    .message-agent & {
+      background: rgba(var(--palette-background-hover-dark), var(--palette-background-hover-dark-alpha, 0.04));
+      color: rgba(var(--palette-foreground-text-dark), var(--palette-foreground-text-dark-alpha));
+    }
+  }
+
+  .markdown-content {
+    th,
+    td {
+      border-color: rgba(var(--palette-foreground-divider-dark), var(--palette-foreground-divider-dark-alpha));
+    }
+
+    th {
+      background: rgba(var(--palette-background-hover-dark), var(--palette-background-hover-dark-alpha, 0.04));
+    }
+
+    code {
+      background: rgba(var(--palette-background-hover-dark), var(--palette-background-hover-dark-alpha, 0.04));
+    }
+  }
+
+  .typing-indicator .dot {
+    background: rgba(var(--palette-foreground-secondary-text-dark), var(--palette-foreground-secondary-text-dark-alpha));
+  }
+
+  .clear-chat-button {
+    color: rgba(var(--palette-foreground-secondary-text-dark), var(--palette-foreground-secondary-text-dark-alpha));
+
+    &:hover {
+      background: rgba(var(--palette-background-hover-dark), var(--palette-background-hover-dark-alpha, 0.04));
+      color: rgba(var(--palette-foreground-text-dark), var(--palette-foreground-text-dark-alpha));
+    }
+  }
+
+  .input-wrapper {
+    background: rgba(var(--palette-background-hover-dark), var(--palette-background-hover-dark-alpha, 0.04));
+    border-color: rgba(var(--palette-foreground-divider-dark), var(--palette-foreground-divider-dark-alpha));
+
+    input {
+      color: rgba(var(--palette-foreground-text-dark), var(--palette-foreground-text-dark-alpha));
+
+      &::placeholder {
+        color: rgba(var(--palette-foreground-hint-text-dark), var(--palette-foreground-hint-text-dark-alpha));
+      }
+    }
+  }
+
+  .send-button {
+    background: rgba(var(--palette-foreground-secondary-text-dark), var(--palette-foreground-secondary-text-dark-alpha));
+  }
+}
