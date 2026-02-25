@@ -8,6 +8,7 @@ from .tools.create_order import create_order
 from .tools.delete_order import delete_order
 from .tools.dividends import dividend_analysis
 from .tools.market_data import market_data
+from .tools.market_news import market_news
 from .tools.portfolio import portfolio_analysis
 from .tools.risk_assessment import risk_assessment
 from .tools.preferences import delete_user_preference, get_user_preferences, save_user_preference
@@ -37,6 +38,7 @@ def create_agent():
         benchmark_comparison,
         dividend_analysis,
         account_summary,
+        market_news,
         create_order,
         delete_order,
         get_user_preferences,
