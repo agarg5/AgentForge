@@ -211,13 +211,13 @@ cd agent && GHOSTFOLIO_ACCESS_TOKEN="$SECURITY_TOKEN" python -m pytest evals/tes
 cd agent && GHOSTFOLIO_ACCESS_TOKEN="$SECURITY_TOKEN" python -m pytest evals/test_guardrails.py -v
 ```
 
-**Braintrust Unified Runner (69 cases)** — Combines all datasets with LLM-as-judge scoring:
+**Eval Runner (150 cases)** - Runs all datasets with rule-based scorers:
 ```bash
-cd agent && GHOSTFOLIO_ACCESS_TOKEN="$SECURITY_TOKEN" python evals/bt_eval.py
+cd agent && AGENT_AUTH_TOKEN="$AUTH_TOKEN" MOCK_NEWS=true python evals/eval_runner.py
 ```
-- Requires `BRAINTRUST_API_KEY` and `OPENAI_API_KEY` environment variables
-- Results are uploaded to the Braintrust dashboard
-- Uses custom scorers (ToolsMatch, MustContain, MustNotContain, ScopeDeclined, NoHallucination) plus Factuality from `autoevals`
+- Results print to console; traces go to LangSmith
+- Uses rule-based scorers (ToolsMatch, MustContain, MustNotContain, ScopeDeclined, NoHallucination)
+- Set `MOCK_NEWS=true` to avoid Alpha Vantage rate limits
 
 **Target:** >80% pass rate across all suites.
 
