@@ -141,9 +141,11 @@ async def agent_task(input, hooks):
 
     data = resp.json()
     tools_used = data.get("metrics", {}).get("tools_used", [])
-    # hooks.meta() merges into the metadata dict that scorers receive,
-    # so scorers can access tools_used via metadata.get("tools_used").
-    hooks.meta(tools_used=tools_used)
+    # Pass tools_used to scorers via metadata (hooks.meta is deprecated)
+    if hasattr(hooks, "metadata"):
+        hooks.metadata["tools_used"] = tools_used
+    else:
+        hooks.meta(tools_used=tools_used)
     return data.get("content", "")
 
 
@@ -287,4 +289,5 @@ Eval(
         no_hallucination,
         _factuality_scorer,
     ],
+    max_concurrency=3,  # Avoid OpenAI TPM rate limits (30K TPM on free tier)
 )
