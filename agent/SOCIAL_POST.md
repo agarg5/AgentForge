@@ -2,7 +2,7 @@
 
 ## Twitter/X (280 chars)
 
-Built an open-source AI financial assistant for @ghostaborern during @GauntletAI fellowship — 9 tools wrapping a real portfolio API, verification layer to prevent hallucinated prices, 150+ eval cases, LangSmith observability. LangChain + GPT-4o + FastAPI.
+Built an open-source AI financial assistant for Ghostfolio during @GauntletAI fellowship — 9 tools wrapping a real portfolio API, verification layer to prevent hallucinated prices, 150+ eval cases, LangSmith observability. LangChain + GPT-4o + FastAPI.
 
 github.com/agarg5/AgentForge
 
