@@ -223,7 +223,7 @@
 }
 
 // Dark mode
-:host-context(.is-dark-theme) {
+:host-context(.theme-dark) {
   .section-title {
     color: rgba(255, 255, 255, 0.87);
 
