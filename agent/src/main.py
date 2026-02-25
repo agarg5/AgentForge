@@ -264,6 +264,104 @@ async def clear_chat_history(authorization: str = Header()):
     return {"status": "ok"}
 
 
+@app.get("/admin/overview")
+async def admin_overview():
+    """Return agent configuration, tools, verification, eval stats, and cost model.
+
+    This powers the admin "Agent" tab in the Ghostfolio UI.
+    """
+    import json
+    import pathlib
+
+    # Tools registry (from the agent's tool list)
+    tools_list = [
+        {"name": "portfolio_analysis", "description": "Holdings, allocation, performance, sector/country breakdowns", "type": "read"},
+        {"name": "transaction_history", "description": "Activity list with symbol, type, date, and account filters", "type": "read"},
+        {"name": "market_data", "description": "Symbol lookup, prices, asset profiles from data providers", "type": "read"},
+        {"name": "risk_assessment", "description": "X-Ray analysis, diversification rules, risk scoring", "type": "read"},
+        {"name": "benchmark_comparison", "description": "Portfolio vs index performance comparison", "type": "read"},
+        {"name": "dividend_analysis", "description": "Dividend income tracking with date ranges", "type": "read"},
+        {"name": "account_summary", "description": "Multi-account overview with balances and platforms", "type": "read"},
+        {"name": "market_news", "description": "Financial news and sentiment via Alpha Vantage API", "type": "read"},
+        {"name": "create_order", "description": "Create buy/sell/dividend orders (requires user confirmation)", "type": "write"},
+        {"name": "delete_order", "description": "Delete an existing order (requires user confirmation)", "type": "write"},
+        {"name": "get_user_preferences", "description": "Read persistent user preferences (currency, risk tolerance, etc.)", "type": "read"},
+        {"name": "save_user_preference", "description": "Save a user preference to persistent storage", "type": "write"},
+        {"name": "delete_user_preference", "description": "Delete a user preference from persistent storage", "type": "write"},
+    ]
+
+    # Verification checks
+    verification_checks = [
+        {"name": "scope", "description": "Validates response is on-topic for a finance agent"},
+        {"name": "disclaimer", "description": "Ensures financial advice includes disclaimers; auto-appends if missing"},
+        {"name": "numeric_consistency", "description": "Checks numbers in response appear in tool outputs (hallucination detection)"},
+        {"name": "confidence", "description": "Scores response confidence 0.0–1.0 based on tool data quality"},
+        {"name": "ticker_verification", "description": "Validates ticker symbols resolve to real securities (enforced at tool-call time)"},
+    ]
+
+    # Eval stats from cases.json
+    eval_stats = {"total_cases": 0, "categories": {}, "scorers": [
+        "tool_called", "no_hallucination", "values_from_tool",
+        "guardrails", "factuality", "contains_table",
+    ]}
+    cases_path = pathlib.Path(__file__).parent.parent / "evals" / "datasets" / "cases.json"
+    if cases_path.exists():
+        try:
+            cases = json.loads(cases_path.read_text())
+            eval_stats["total_cases"] = len(cases)
+            cats: dict[str, int] = {}
+            for c in cases:
+                cat = c.get("category", "unknown")
+                cats[cat] = cats.get(cat, 0) + 1
+            eval_stats["categories"] = cats
+        except Exception:
+            pass
+
+    # Cost model
+    from .observability.cost import DEFAULT_MODEL, MODEL_PRICING
+    pricing = MODEL_PRICING.get(DEFAULT_MODEL, {})
+    cost_model = {
+        "model": DEFAULT_MODEL,
+        "pricing": {
+            "input_per_1m_tokens_usd": pricing.get("input", 0),
+            "output_per_1m_tokens_usd": pricing.get("output", 0),
+        },
+        "projections": {
+            "avg_tokens_per_request": {"input": 2000, "output": 500},
+            "cost_per_request_usd": round((2000 / 1_000_000) * pricing.get("input", 0) + (500 / 1_000_000) * pricing.get("output", 0), 4),
+            "daily_100_requests_usd": round(100 * ((2000 / 1_000_000) * pricing.get("input", 0) + (500 / 1_000_000) * pricing.get("output", 0)), 2),
+            "monthly_3000_requests_usd": round(3000 * ((2000 / 1_000_000) * pricing.get("input", 0) + (500 / 1_000_000) * pricing.get("output", 0)), 2),
+        },
+    }
+
+    # Performance targets (from assignment.pdf)
+    performance_targets = {
+        "latency_seconds": 5,
+        "tool_success_rate": 0.95,
+        "eval_pass_rate": 0.80,
+        "hallucination_rate": 0.05,
+    }
+
+    # Agent config
+    config = {
+        "model": DEFAULT_MODEL,
+        "max_agent_steps": MAX_AGENT_STEPS,
+        "max_history_messages": MAX_HISTORY_MESSAGES,
+        "tracing_enabled": tracing_active,
+        "memory_backend": "redis" if memory_store.is_persistent else "in-memory",
+        "chat_history_backend": "redis" if chat_history_store.is_persistent else "in-memory",
+    }
+
+    return {
+        "tools": tools_list,
+        "verification": {"checks": verification_checks, "total_checks": len(verification_checks)},
+        "evals": eval_stats,
+        "cost": cost_model,
+        "performance_targets": performance_targets,
+        "config": config,
+    }
+
+
 @app.post("/feedback")
 async def feedback(body: FeedbackRequest):
     """Submit user feedback (thumbs up/down) for a chat response.

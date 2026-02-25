@@ -2,6 +2,7 @@ import { HasPermission } from '@ghostfolio/api/decorators/has-permission.decorat
 import { HasPermissionGuard } from '@ghostfolio/api/guards/has-permission.guard';
 import { ApiService } from '@ghostfolio/api/services/api/api.service';
 import {
+  AiAdminOverviewResponse,
   AiFeedbackRequest,
   AiPromptResponse
 } from '@ghostfolio/common/interfaces';
@@ -80,6 +81,19 @@ export class AiController {
       return await this.aiService.clearChatHistory({
         authToken: authorization
       });
+    } catch (error) {
+      throw new HttpException(
+        error.message ?? 'Agent unavailable',
+        error.status ?? HttpStatus.BAD_GATEWAY
+      );
+    }
+  }
+
+  @Get('admin/overview')
+  @UseGuards(AuthGuard('jwt'), HasPermissionGuard)
+  public async getAdminOverview(): Promise<AiAdminOverviewResponse> {
+    try {
+      return await this.aiService.getAdminOverview();
     } catch (error) {
       throw new HttpException(
         error.message ?? 'Agent unavailable',
