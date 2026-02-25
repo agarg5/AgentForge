@@ -2,8 +2,9 @@
 
 Produces a 0.0–1.0 confidence score based on signals like whether tools
 were called, whether numeric data is present, and whether the response
-contains hedging language.  Low-confidence responses get a visible
-caveat appended so users know to treat them with caution.
+contains hedging language.  The low-confidence caveat is reserved for
+responses that rely on third-party external data sources (e.g. market_news
+via AlphaVantage) where data quality is less certain.
 """
 
 from __future__ import annotations
@@ -19,6 +20,11 @@ DATA_TOOLS = {
     "benchmark_comparison",
     "dividend_analysis",
     "account_summary",
+}
+
+# Tools that rely on third-party APIs where data quality is less certain
+EXTERNAL_TOOLS = {
+    "market_news",
 }
 
 # Hedging language that suggests uncertainty
@@ -44,14 +50,40 @@ _CONCRETE_DATA_PATTERNS = [
     r"\b\d{2,}(?:,\d{3})*\b", # Large numbers (100+)
 ]
 
+# Patterns in tool output that indicate rate limiting or unavailability
+_EXTERNAL_TOOL_ISSUE_PATTERNS = [
+    r"rate.?limit",
+    r"too many requests",
+    r"429",
+    r"unavailable",
+    r"timed?\s*out",
+    r"api.?key",
+    r"quota",
+]
+
 # Threshold below which we append a low-confidence caveat
 LOW_CONFIDENCE_THRESHOLD = 0.4
 
 LOW_CONFIDENCE_CAVEAT = (
-    "\n\n> **Note:** This response has lower confidence because it is "
-    "based on limited or no tool data. Please verify the information "
-    "with your portfolio directly."
+    "\n\n> **Note:** Market news data comes from a third-party source "
+    "and may be delayed or limited. Please verify with additional sources."
 )
+
+
+def _has_external_tool_issues(tool_outputs: list[str]) -> bool:
+    """Check if any tool outputs indicate errors or rate limiting."""
+    for output in tool_outputs:
+        if not output:
+            continue
+        output_lower = output.lower()
+        # Check for explicit errors
+        if "error" in output_lower[:50]:
+            return True
+        # Check for rate limiting / unavailability patterns
+        for pattern in _EXTERNAL_TOOL_ISSUE_PATTERNS:
+            if re.search(pattern, output_lower):
+                return True
+    return False
 
 
 def score_confidence(
@@ -67,12 +99,15 @@ def score_confidence(
         - Multiple tools corroborate the answer
 
     Signals that decrease confidence:
-        - No tools called
+        - External tools (market_news) returned errors or rate-limited data
         - Hedging language present
-        - Tool called but returned an error
+
+    The low-confidence caveat is ONLY appended when market_news (or other
+    external tools) were used and encountered issues.  Conversational
+    responses and Ghostfolio-backed responses never trigger the caveat.
 
     Returns:
-        (score, detail) where score is 0.0–1.0 and detail explains the rating.
+        (score, detail) where score is 0.0-1.0 and detail explains the rating.
     """
     response_lower = response.lower()
     tool_outputs = tool_outputs or []
@@ -106,12 +141,14 @@ def score_confidence(
 
     # --- Negative signals ---
 
-    # No tools called at all
-    if not tools_used:
-        score -= 0.2
-        factors.append("-0.20 no tools called")
+    # External tool (market_news) with issues — the only path to the caveat
+    external_tools_used = set(tools_used) & EXTERNAL_TOOLS
+    if external_tools_used and _has_external_tool_issues(tool_outputs):
+        score -= 0.3
+        factors.append("-0.30 external tool data issues (market_news)")
 
-    # Hedging language
+    # Hedging language (informational only — cannot push below threshold
+    # unless external tool issues are also present)
     hedging_count = sum(
         1 for p in _HEDGING_PATTERNS if re.search(p, response_lower)
     )
@@ -120,15 +157,15 @@ def score_confidence(
         score -= penalty
         factors.append(f"-{penalty:.2f} hedging language ({hedging_count} instances)")
 
-    # Tool errors in outputs
-    error_outputs = [o for o in tool_outputs if o and "error" in o.lower()[:50]]
-    if error_outputs:
-        penalty = min(len(error_outputs) * 0.1, 0.2)
-        score -= penalty
-        factors.append(f"-{penalty:.2f} tool errors ({len(error_outputs)})")
-
     # Clamp to [0.0, 1.0]
     score = max(0.0, min(1.0, round(score, 2)))
+
+    # Floor: score cannot drop below the threshold unless external tools
+    # were involved with issues.  This ensures conversational responses,
+    # Ghostfolio-backed responses, and even hedged responses without
+    # external-tool problems never trigger the caveat.
+    if not (external_tools_used and _has_external_tool_issues(tool_outputs)):
+        score = max(score, LOW_CONFIDENCE_THRESHOLD)
 
     detail = f"confidence={score:.2f}"
     if factors:
