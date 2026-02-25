@@ -26,7 +26,7 @@ The agent is built on LangChain/LangGraph with GPT-4o as the reasoning engine, d
                           |          |          |
                           |  +-------v-------+  |
                           |  | Tool Registry |  |
-                          |  | (12 tools)    |  |
+                          |  | (13 tools)    |  |
                           |  +-------+-------+  |
                           |          |          |
                           |  +-------v-------+  |       +---------------+
@@ -63,7 +63,7 @@ The agent loop is built with LangGraph's `create_react_agent`, which implements 
 
 ### Tool Registry
 
-Twelve tools are registered with the agent at startup. Each tool is a LangChain `@tool`-decorated async function that receives a `RunnableConfig` for dependency injection. Tools are stateless; the Ghostfolio API client and memory store are passed per-request through the config. See Section 3 for the full tool table.
+Thirteen tools are registered with the agent at startup. Each tool is a LangChain `@tool`-decorated async function that receives a `RunnableConfig` for dependency injection. Tools are stateless; the Ghostfolio API client and memory store are passed per-request through the config. See Section 3 for the full tool table.
 
 ### Memory System
 
@@ -79,8 +79,8 @@ The system prompt instructs the agent to format all responses using markdown tab
 
 ## 3. Tool Architecture
 
-| # | Tool | Type | Ghostfolio API Endpoint(s) | Description |
-|---|------|------|---------------------------|-------------|
+| # | Tool | Type | API Source | Description |
+|---|------|------|-----------|-------------|
 | 1 | `portfolio_analysis` | Read | `GET /api/v1/portfolio/details`, `GET /api/v2/portfolio/performance` | Holdings, allocation percentages, total value, net performance |
 | 2 | `transaction_history` | Read | `GET /api/v1/order` | Recent buy/sell activity with date, type, symbol, quantity filters |
 | 3 | `market_data` | Read | `GET /api/v1/symbol/{dataSource}/{symbol}`, `GET /api/v1/symbol/lookup` | Symbol profile lookup or fuzzy search for asset information |
@@ -88,11 +88,12 @@ The system prompt instructs the agent to format all responses using markdown tab
 | 5 | `benchmark_comparison` | Read | `GET /api/v1/benchmarks`, `GET /api/v2/portfolio/performance` | Portfolio returns vs. configured market index benchmarks |
 | 6 | `dividend_analysis` | Read | `GET /api/v1/portfolio/dividends` | Dividend income by period with yield calculation |
 | 7 | `account_summary` | Read | `GET /api/v1/account` | Multi-account overview with balances and platform info |
-| 8 | `create_order` | Write | `POST /api/v1/order` | Create a buy/sell order (requires user confirmation + ticker verification) |
-| 9 | `delete_order` | Write | `DELETE /api/v1/order/{id}` | Delete an existing order by ID (requires user confirmation) |
-| 10 | `get_user_preferences` | Read | Redis `HGETALL` / `HGET` | Retrieve saved user preferences for personalization |
-| 11 | `save_user_preference` | Write | Redis `HSET` | Persist a user preference (currency, risk tolerance, etc.) |
-| 12 | `delete_user_preference` | Write | Redis `HDEL` | Remove a saved preference |
+| 8 | `market_news` | Read | Alpha Vantage News API | Financial news headlines and sentiment for market context |
+| 9 | `create_order` | Write | `POST /api/v1/order` | Create a buy/sell order (requires user confirmation + ticker verification) |
+| 10 | `delete_order` | Write | `DELETE /api/v1/order/{id}` | Delete an existing order by ID (requires user confirmation) |
+| 11 | `get_user_preferences` | Read | Redis `HGETALL` / `HGET` | Retrieve saved user preferences for personalization |
+| 12 | `save_user_preference` | Write | Redis `HSET` | Persist a user preference (currency, risk tolerance, etc.) |
+| 13 | `delete_user_preference` | Write | Redis `HDEL` | Remove a saved preference |
 
 All Ghostfolio API calls are made through `GhostfolioClient`, an async HTTP client built on `httpx.AsyncClient` with connection pooling, 30-second timeouts, and unified error handling via the `GhostfolioAPIError` exception class.
 
@@ -110,7 +111,7 @@ A chat request follows this path through the system:
 
 5. **Agent Execution** -- `agent.ainvoke()` runs the ReAct loop. The LLM receives the system prompt, message history, and tool schemas. It reasons about which tools to call, executes them (potentially multiple rounds), and produces a final text response.
 
-6. **Metrics Extraction** -- Token usage (input/output/total), tool call count, and tool names are extracted from the result message objects. Latency is measured via `time.monotonic()`. Per-request cost is calculated from token counts and GPT-4o pricing.
+6. **Metrics Extraction** -- Token usage (input/output/total), tool call count, and tool names are extracted from the result message objects. Total latency is measured via `time.monotonic()`, and a `TimingCallback` (LangChain callback handler) tracks LLM call time vs tool execution time separately. Per-request cost is calculated from token counts and GPT-4o pricing.
 
 7. **Verification** -- The final AI message and raw tool outputs are passed through the verification layer. Checks run for disclaimer presence, numeric consistency, and ticker validity. The response may be amended (e.g., a disclaimer appended).
 
@@ -144,6 +145,10 @@ Every response includes a `metrics` object:
 ```json
 {
   "latency_seconds": 2.341,
+  "latency_breakdown": {
+    "llm_seconds": 1.842,
+    "tool_seconds": 0.389
+  },
   "input_tokens": 1520,
   "output_tokens": 430,
   "total_tokens": 1950,

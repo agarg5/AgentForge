@@ -38,6 +38,7 @@ export class GfAdminAgentComponent implements OnInit, OnDestroy {
   public toolColumns = ['name', 'type', 'description'];
   public verificationColumns = ['name', 'description'];
   public evalCategoryEntries: { category: string; count: number }[] = [];
+  public observabilityEntries: { key: string; value: string }[] = [];
 
   private unsubscribeSubject = new Subject<void>();
 
@@ -56,6 +57,11 @@ export class GfAdminAgentComponent implements OnInit, OnDestroy {
           this.evalCategoryEntries = Object.entries(data.evals.categories).map(
             ([category, count]) => ({ category, count })
           );
+          if (data.observability) {
+            this.observabilityEntries = Object.entries(data.observability).map(
+              ([key, value]) => ({ key: key.replace(/_/g, ' '), value: value as string })
+            );
+          }
           this.isLoading = false;
           this.changeDetectorRef.markForCheck();
         },

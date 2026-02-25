@@ -664,5 +664,77 @@
     "checks": ["multi_tool_called", "no_hallucination"],
     "expected_patterns": ["TSLA|Tesla|price|news"],
     "description": "Multi-tool: market news + market data lookup"
+  },
+  {
+    "id": "multi-011",
+    "category": "multi_tool",
+    "input": "I want to rebalance my portfolio. Show me my current holdings, risk analysis, and what benchmarks I should be tracking",
+    "expected_tools": ["portfolio_analysis", "risk_assessment", "benchmark_comparison"],
+    "checks": ["multi_tool_called", "no_hallucination"],
+    "expected_patterns": ["Allocation|Holdings", "Risk", "Benchmark|%"],
+    "description": "Rebalancing workflow: holdings + risk + benchmarks"
+  },
+  {
+    "id": "multi-012",
+    "category": "multi_tool",
+    "input": "Before I buy more AAPL, show me its current price, my existing holdings, and my account balances so I know how much cash I have",
+    "expected_tools": ["market_data", "portfolio_analysis", "account_summary"],
+    "checks": ["multi_tool_called", "no_hallucination"],
+    "expected_patterns": ["AAPL", "Portfolio|Holdings", "Account|Balance"],
+    "description": "Pre-purchase research: market data + portfolio + accounts"
+  },
+  {
+    "id": "multi-013",
+    "category": "multi_tool",
+    "input": "Give me a full income report: my dividend earnings, transaction history of dividend payments, and which accounts they came from",
+    "expected_tools": ["dividend_analysis", "transaction_history", "account_summary"],
+    "checks": ["multi_tool_called", "no_hallucination"],
+    "expected_patterns": ["Dividend", "Transaction|Date", "Account"],
+    "description": "Income report: dividends + transactions + accounts"
+  },
+  {
+    "id": "multi-014",
+    "category": "multi_tool",
+    "input": "How concentrated is my portfolio? Show me my holdings breakdown, run the risk X-Ray, and check if I'm beating the market",
+    "expected_tools": ["portfolio_analysis", "risk_assessment", "benchmark_comparison"],
+    "checks": ["multi_tool_called", "no_hallucination"],
+    "expected_patterns": ["Allocation|concentrat", "Risk|X-Ray", "Benchmark|%"],
+    "description": "Concentration check: portfolio + risk + benchmark"
+  },
+  {
+    "id": "multi-015",
+    "category": "multi_tool",
+    "input": "I'm reviewing my investment strategy. Show me recent transactions, current risk warnings, and how my portfolio has performed against benchmarks",
+    "expected_tools": ["transaction_history", "risk_assessment", "benchmark_comparison"],
+    "checks": ["multi_tool_called", "no_hallucination"],
+    "expected_patterns": ["Transaction|Date", "Risk|warn", "Benchmark|%"],
+    "description": "Strategy review: transactions + risk + benchmarks"
+  },
+  {
+    "id": "multi-016",
+    "category": "multi_tool",
+    "input": "Prepare a quarterly review for me: portfolio performance, dividend income received, account balances, and any risk warnings",
+    "expected_tools": ["portfolio_analysis", "dividend_analysis", "account_summary", "risk_assessment"],
+    "checks": ["multi_tool_called", "no_hallucination"],
+    "expected_patterns": ["Portfolio|Performance", "Dividend", "Account|Balance", "Risk"],
+    "description": "Quarterly review: 4-tool portfolio + dividends + accounts + risk"
+  },
+  {
+    "id": "multi-017",
+    "category": "multi_tool",
+    "input": "I want to see how my recent trades affected my risk profile. Show me my last transactions, current portfolio allocation, and run a risk assessment",
+    "expected_tools": ["transaction_history", "portfolio_analysis", "risk_assessment"],
+    "checks": ["multi_tool_called", "no_hallucination"],
+    "expected_patterns": ["Transaction|trade", "Allocation|Portfolio", "Risk"],
+    "description": "Trade impact analysis: transactions + portfolio + risk"
+  },
+  {
+    "id": "multi-018",
+    "category": "multi_tool",
+    "input": "Give me the full picture: portfolio value, all account balances, dividend income, benchmark comparison, and risk analysis",
+    "expected_tools": ["portfolio_analysis", "account_summary", "dividend_analysis", "benchmark_comparison", "risk_assessment"],
+    "checks": ["multi_tool_called", "no_hallucination"],
+    "expected_patterns": ["Portfolio", "Account", "Dividend", "Benchmark|%", "Risk"],
+    "description": "Comprehensive 5-tool overview: portfolio + accounts + dividends + benchmarks + risk"
   }
 ]
