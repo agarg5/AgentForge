@@ -1,3 +1,8 @@
+// Use Ghostfolio's palette CSS variables for theme-aware colors.
+// These are RGB tuples (e.g. "0, 0, 0") set by the app's theme system.
+// Light theme uses --palette-foreground-text (dark text on light bg).
+// Dark theme (.theme-dark) uses --palette-foreground-text-dark (light text on dark bg).
+
 :host {
   display: flex;
   flex-direction: column;
@@ -31,7 +36,7 @@
   gap: 0.5rem;
 
   .empty-state-icon {
-    color: var(--gf-primary, #6366f1);
+    color: rgba(var(--palette-primary-500), 1);
     font-size: 3rem;
     height: 3rem;
     width: 3rem;
@@ -43,12 +48,12 @@
     font-size: 1.5rem;
     font-weight: 600;
     margin: 0.5rem 0 0;
-    color: var(--gf-text-primary, rgba(255, 255, 255, 0.87));
+    color: rgba(var(--palette-foreground-text), var(--palette-foreground-text-alpha));
   }
 
   p {
     font-size: 1rem;
-    color: var(--gf-text-secondary, rgba(255, 255, 255, 0.5));
+    color: rgba(var(--palette-foreground-secondary-text), var(--palette-foreground-secondary-text-alpha));
     margin: 0 0 1.5rem;
   }
 }
@@ -62,18 +67,18 @@
 
   .chip {
     background: transparent;
-    border: 1px solid var(--gf-border, rgba(255, 255, 255, 0.12));
+    border: 1px solid rgba(var(--palette-foreground-divider), var(--palette-foreground-divider-alpha));
     border-radius: 1.5rem;
-    color: var(--gf-text-secondary, rgba(255, 255, 255, 0.6));
+    color: rgba(var(--palette-foreground-secondary-text), var(--palette-foreground-secondary-text-alpha));
     cursor: pointer;
     font-size: 0.85rem;
     padding: 0.5rem 1rem;
     transition: all 0.2s ease;
 
     &:hover {
-      background: var(--gf-background-hover, rgba(255, 255, 255, 0.06));
-      border-color: var(--gf-primary, #6366f1);
-      color: var(--gf-text-primary, rgba(255, 255, 255, 0.87));
+      background: rgba(var(--palette-background-hover), var(--palette-background-hover-alpha, 0.04));
+      border-color: rgba(var(--palette-primary-500), 1);
+      color: rgba(var(--palette-foreground-text), var(--palette-foreground-text-alpha));
     }
   }
 }
@@ -106,7 +111,7 @@
   width: 2rem;
 
   &.agent-avatar {
-    background: var(--gf-primary, #6366f1);
+    background: rgba(var(--palette-primary-500), 1);
     overflow: visible;
 
     mat-icon {
@@ -127,15 +132,15 @@
   font-size: 0.925rem;
 
   .message-user & {
-    background: var(--gf-primary, #6366f1);
+    background: rgba(var(--palette-primary-500), 1);
     border-bottom-right-radius: 0.25rem;
     color: white;
   }
 
   .message-agent & {
-    background: var(--gf-background-hover, rgba(255, 255, 255, 0.06));
+    background: rgba(var(--palette-background-hover), var(--palette-background-hover-alpha, 0.04));
     border-bottom-left-radius: 0.25rem;
-    color: var(--gf-text-primary, rgba(255, 255, 255, 0.87));
+    color: rgba(var(--palette-foreground-text), var(--palette-foreground-text-alpha));
     max-width: 85%;
   }
 }
@@ -165,13 +170,13 @@
 
   th,
   td {
-    border: 1px solid var(--gf-border, rgba(255, 255, 255, 0.15));
+    border: 1px solid rgba(var(--palette-foreground-divider), var(--palette-foreground-divider-alpha));
     padding: 0.35rem 0.6rem;
     text-align: left;
   }
 
   th {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(var(--palette-background-hover), var(--palette-background-hover-alpha, 0.04));
     font-weight: 600;
   }
 
@@ -186,7 +191,7 @@
   }
 
   code {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(var(--palette-background-hover), var(--palette-background-hover-alpha, 0.04));
     border-radius: 0.25rem;
     font-size: 0.85em;
     padding: 0.1rem 0.35rem;
@@ -203,7 +208,7 @@
 
   .dot {
     animation: typing 1.4s infinite ease-in-out;
-    background: var(--gf-text-secondary, rgba(255, 255, 255, 0.4));
+    background: rgba(var(--palette-foreground-secondary-text), var(--palette-foreground-secondary-text-alpha));
     border-radius: 50%;
     display: inline-block;
     height: 0.5rem;
@@ -248,7 +253,7 @@
   background: transparent;
   border: none;
   border-radius: 0.5rem;
-  color: var(--gf-text-secondary, rgba(255, 255, 255, 0.5));
+  color: rgba(var(--palette-foreground-secondary-text), var(--palette-foreground-secondary-text-alpha));
   cursor: pointer;
   display: flex;
   font-size: 0.8rem;
@@ -257,8 +262,8 @@
   transition: all 0.2s ease;
 
   &:hover {
-    background: var(--gf-background-hover, rgba(255, 255, 255, 0.06));
-    color: var(--gf-text-primary, rgba(255, 255, 255, 0.87));
+    background: rgba(var(--palette-background-hover), var(--palette-background-hover-alpha, 0.04));
+    color: rgba(var(--palette-foreground-text), var(--palette-foreground-text-alpha));
   }
 
   &:disabled {
@@ -275,8 +280,8 @@
 
 .input-wrapper {
   align-items: center;
-  background: var(--gf-background-hover, rgba(255, 255, 255, 0.06));
-  border: 1px solid var(--gf-border, rgba(255, 255, 255, 0.12));
+  background: rgba(var(--palette-background-hover), var(--palette-background-hover-alpha, 0.04));
+  border: 1px solid rgba(var(--palette-foreground-divider), var(--palette-foreground-divider-alpha));
   border-radius: 1.5rem;
   display: flex;
   gap: 0.5rem;
@@ -285,29 +290,29 @@
   width: 100%;
 
   &:focus-within {
-    border-color: var(--gf-primary, #6366f1);
+    border-color: rgba(var(--palette-primary-500), 1);
   }
 
   input {
     background: transparent;
     border: none;
-    color: var(--gf-text-primary, rgba(255, 255, 255, 0.87));
+    color: rgba(var(--palette-foreground-text), var(--palette-foreground-text-alpha));
     flex: 1;
     font-size: 0.95rem;
     outline: none;
 
     &::placeholder {
-      color: var(--gf-text-secondary, rgba(255, 255, 255, 0.4));
+      color: rgba(var(--palette-foreground-hint-text), var(--palette-foreground-hint-text-alpha));
     }
   }
 }
 
 .send-button {
   align-items: center;
-  background: var(--gf-text-secondary, rgba(255, 255, 255, 0.2));
+  background: rgba(var(--palette-foreground-secondary-text), var(--palette-foreground-secondary-text-alpha));
   border: none;
   border-radius: 50%;
-  color: var(--gf-text-primary, rgba(255, 255, 255, 0.87));
+  color: white;
   cursor: pointer;
   display: flex;
   flex-shrink: 0;
@@ -317,7 +322,7 @@
   width: 2.25rem;
 
   &.active {
-    background: var(--gf-primary, #6366f1);
+    background: rgba(var(--palette-primary-500), 1);
     color: white;
   }
 
