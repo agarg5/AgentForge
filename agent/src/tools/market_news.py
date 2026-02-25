@@ -87,6 +87,18 @@ async def market_news(
     if "Error Message" in data:
         return f"Alpha Vantage API error: {data['Error Message']}"
 
+    # Alpha Vantage returns "Note" or "Information" on rate limit (25/day free tier)
+    if "Note" in data:
+        return (
+            "Market news is temporarily unavailable (API rate limit reached). "
+            "Please try again later."
+        )
+    if "Information" in data:
+        return (
+            "Market news is temporarily unavailable (API rate limit reached). "
+            "Please try again later."
+        )
+
     feed = data.get("feed", [])
     if not feed:
         filter_desc = ""
@@ -112,8 +124,8 @@ async def market_news(
     lines.append("|------|----------|--------|-----------|")
 
     for article in articles:
-        title = article.get("title", "N/A")
-        source = article.get("source", "N/A")
+        title = article.get("title", "N/A").replace("|", "\\|")
+        source = article.get("source", "N/A").replace("|", "\\|")
         sentiment = article.get("overall_sentiment_label", "N/A")
         time_published = article.get("time_published", "")
 
