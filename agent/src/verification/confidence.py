@@ -106,10 +106,18 @@ def score_confidence(
 
     # --- Negative signals ---
 
-    # No tools called at all
+    # No tools called at all — only penalise when the response contains
+    # financial content that *should* have been backed by tool data.
+    # Simple conversational replies ("hi", "how can I help?") shouldn't be
+    # flagged as low-confidence because no financial claim is being made.
     if not tools_used:
-        score -= 0.2
-        factors.append("-0.20 no tools called")
+        _has_financial_content = any(
+            re.search(p, response) for p in _CONCRETE_DATA_PATTERNS
+        )
+        if _has_financial_content:
+            score -= 0.2
+            factors.append("-0.20 no tools called (financial data without tool backing)")
+        # else: conversational response — no penalty
 
     # Hedging language
     hedging_count = sum(

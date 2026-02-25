@@ -24,26 +24,45 @@ class TestScoreConfidence:
         )
         assert 0.6 <= score <= 0.9
 
-    def test_low_confidence_no_tools(self):
-        """No tools called = low confidence."""
+    def test_low_confidence_no_tools_with_financial_data(self):
+        """No tools called but financial data present = low confidence."""
         score, _ = score_confidence(
-            "I think your portfolio might be doing well, but I'm not sure "
-            "approximately what the returns could be. It generally depends "
-            "on market conditions.",
+            "I think your portfolio is worth approximately $52,000 with "
+            "returns of roughly 12.34%, but I'm not sure. It generally "
+            "depends on market conditions.",
             [],
             [],
         )
         assert score < LOW_CONFIDENCE_THRESHOLD
 
+    def test_conversational_response_no_penalty(self):
+        """Simple conversational responses should not get low confidence."""
+        score, _ = score_confidence(
+            "Hello! I'm your financial assistant. How can I help you today?",
+            [],
+            [],
+        )
+        # No tools, but no financial data either — no penalty applied.
+        # Score should stay at 0.5 (base) and NOT trigger the caveat.
+        assert score >= LOW_CONFIDENCE_THRESHOLD
+
+    def test_greeting_no_low_confidence(self):
+        """Greetings like 'hi' should never show the low-confidence caveat."""
+        for greeting in ["Hi!", "Hello", "Hey, how are you?", "Good morning!"]:
+            score, _ = score_confidence(greeting, [], [])
+            assert score >= LOW_CONFIDENCE_THRESHOLD, (
+                f"Greeting '{greeting}' got score {score}, expected >= {LOW_CONFIDENCE_THRESHOLD}"
+            )
+
     def test_no_tools_but_short_factual(self):
-        """No tools but no hedging = moderate confidence."""
+        """No tools but no hedging or financial data = base confidence."""
         score, _ = score_confidence(
             "I can help you analyze your portfolio. What would you like to know?",
             [],
             [],
         )
-        # Base 0.5 - 0.2 (no tools) = 0.3, but no hedging
-        assert score >= 0.2
+        # Base 0.5, no penalty (no financial content), no hedging
+        assert score >= LOW_CONFIDENCE_THRESHOLD
 
     def test_hedging_reduces_confidence(self):
         """Hedging language reduces confidence."""
