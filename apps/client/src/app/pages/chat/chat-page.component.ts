@@ -200,10 +200,16 @@ export class GfChatPageComponent implements AfterViewChecked, OnInit {
       return;
     }
 
+    const previousScore = message.feedbackScore;
     message.feedbackScore = score;
     this.changeDetectorRef.markForCheck();
 
-    this.dataService.sendFeedback({ run_id: message.runId, score }).subscribe();
+    this.dataService.sendFeedback({ run_id: message.runId, score }).subscribe({
+      error: () => {
+        message.feedbackScore = previousScore;
+        this.changeDetectorRef.markForCheck();
+      }
+    });
   }
 
   private animateVerificationChecks(message: ChatMessage) {

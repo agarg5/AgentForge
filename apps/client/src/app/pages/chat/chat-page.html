@@ -147,8 +147,8 @@
                   <button
                     class="feedback-btn"
                     matTooltip="Not helpful"
-                    [class.active]="message.feedbackScore === -1"
-                    (click)="onFeedback(message, -1)"
+                    [class.active]="message.feedbackScore === 0"
+                    (click)="onFeedback(message, 0)"
                   >
                     <mat-icon>thumb_down</mat-icon>
                   </button>
