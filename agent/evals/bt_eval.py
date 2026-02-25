@@ -289,5 +289,5 @@ Eval(
         no_hallucination,
         _factuality_scorer,
     ],
-    max_concurrency=3,  # Avoid OpenAI TPM rate limits (30K TPM on free tier)
+    max_concurrency=10,  # Limit parallel agent calls to avoid OpenAI TPM rate limits
 )
