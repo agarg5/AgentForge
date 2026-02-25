@@ -77,6 +77,8 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     role: str = "agent"
     content: str
+    tools_used: list[str] = []
+    tool_count: int = 0
     run_id: Optional[str] = None
     metrics: Optional[dict] = None
 
@@ -219,12 +221,22 @@ async def chat(body: ChatRequest, authorization: str = Header()):
 
             response_content = verification["response"]
 
+            # Deduplicate tools_used while preserving first-seen order
+            seen = set()
+            unique_tools = []
+            for t in metrics.get("tools_used", []):
+                if t not in seen:
+                    seen.add(t)
+                    unique_tools.append(t)
+
             # Persist both messages to chat history
             await chat_history_store.append_message(token, "user", body.message)
             await chat_history_store.append_message(token, "agent", response_content)
 
             return ChatResponse(
                 content=response_content,
+                tools_used=unique_tools,
+                tool_count=len(unique_tools),
                 run_id=run_id,
                 metrics=metrics,
             )
