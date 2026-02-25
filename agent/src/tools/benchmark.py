@@ -92,8 +92,9 @@ async def benchmark_comparison(
             condition = b.get("marketCondition", "")
             condition_str = _MARKET_CONDITION_LABELS.get(condition, condition or "Unknown")
             if ath_perf is not None:
+                ath_perf_str = f"{ath_perf:.2%}"
                 lines.append(
-                    f"- {bname} is {ath_str} from its all-time high (market condition: {condition_str})"
+                    f"- {bname} is {ath_perf_str} from its all-time high (market condition: {condition_str})"
                 )
 
     return "\n".join(lines)
