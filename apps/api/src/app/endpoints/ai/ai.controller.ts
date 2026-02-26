@@ -89,6 +89,19 @@ export class AiController {
     }
   }
 
+  @Get('politicians')
+  @UseGuards(AuthGuard('jwt'), HasPermissionGuard)
+  public async getPoliticians() {
+    try {
+      return await this.aiService.getPoliticians();
+    } catch (error) {
+      throw new HttpException(
+        error.message ?? 'Agent unavailable',
+        error.status ?? HttpStatus.BAD_GATEWAY
+      );
+    }
+  }
+
   @Get('admin/overview')
   @UseGuards(AuthGuard('jwt'), HasPermissionGuard)
   public async getAdminOverview(): Promise<AiAdminOverviewResponse> {

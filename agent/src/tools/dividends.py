@@ -38,29 +38,21 @@ async def dividend_analysis(
     lines = [f"**Dividend Analysis ({effective_range})**\n"]
 
     total_dividend = 0
-    total_investment = 0
 
-    lines.append("| Date | Dividend | Investment | Currency |")
-    lines.append("|------|----------|------------|----------|")
+    lines.append("| Date | Dividend | Currency |")
+    lines.append("|------|----------|----------|")
 
     for entry in dividends:
         date = entry.get("date", "")[:10]
-        dividend = entry.get("dividend", 0)
-        investment = entry.get("investment", 0)
-        currency = entry.get("currency", "")
-        total_dividend += dividend
-        total_investment += investment
+        # Ghostfolio returns dividend amounts in the "investment" field
+        amount = entry.get("investment", 0) or entry.get("dividend", 0)
+        currency = entry.get("currency", "USD")
+        total_dividend += amount
 
-        if dividend > 0:
-            lines.append(
-                f"| {date} | {dividend:,.2f} | {investment:,.2f} | {currency} |"
-            )
+        if amount > 0:
+            lines.append(f"| {date} | {amount:,.2f} | {currency} |")
 
     lines.append("")
     lines.append(f"**Total Dividends:** {total_dividend:,.2f}")
-    lines.append(f"**Total Invested:** {total_investment:,.2f}")
-    if total_investment > 0:
-        yield_pct = total_dividend / total_investment
-        lines.append(f"**Dividend Yield:** {yield_pct:.2%}")
 
     return "\n".join(lines)

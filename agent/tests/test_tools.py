@@ -2,6 +2,7 @@
 
 import httpx
 import pytest
+import respx
 
 from src.tools.portfolio import portfolio_analysis
 from src.tools.transactions import transaction_history
@@ -10,6 +11,7 @@ from src.tools.risk_assessment import risk_assessment
 from src.tools.benchmark import benchmark_comparison
 from src.tools.dividends import dividend_analysis
 from src.tools.accounts import account_summary
+from src.tools.congressional_trades import congressional_trades
 from src.tools.create_order import create_order
 from src.tools.delete_order import delete_order
 
@@ -222,14 +224,13 @@ async def test_dividend_analysis_success(mock_api, tool_config):
     mock_api.get("/api/v1/portfolio/dividends").mock(
         return_value=httpx.Response(200, json={
             "dividends": [
-                {"date": "2024-06-15T00:00:00Z", "dividend": 50.0, "investment": 10000, "currency": "USD"},
-                {"date": "2024-03-15T00:00:00Z", "dividend": 45.0, "investment": 9000, "currency": "USD"},
+                {"date": "2024-06-15", "investment": 50.0},
+                {"date": "2024-03-15", "investment": 45.0},
             ]
         })
     )
     result = await dividend_analysis.ainvoke({}, config=tool_config)
     assert "95.00" in result  # total dividends
-    assert "Dividend Yield" in result
 
 
 @pytest.mark.asyncio
@@ -400,3 +401,95 @@ async def test_delete_order_not_found(mock_api, tool_config):
 async def test_delete_order_empty_id(mock_api, tool_config):
     result = await delete_order.ainvoke({"order_id": ""}, config=tool_config)
     assert "order_id is required" in result
+
+
+# ---------------------------------------------------------------------------
+# congressional_trades
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_congressional_trades_success(monkeypatch, tool_config):
+    """Mock API returns trades, verify markdown table output."""
+    monkeypatch.setenv("QUIVER_AUTHORIZATION_TOKEN", "test-token")
+    mock_trades = [
+        {
+            "Representative": "Nancy Pelosi",
+            "Party": "D",
+            "House": "House",
+            "Ticker": "NVDA",
+            "Transaction": "Purchase",
+            "Amount": "$1,000,001 - $5,000,000",
+            "Date": "2026-02-01",
+            "ReportDate": "2026-02-15",
+        },
+        {
+            "Representative": "Tommy Tuberville",
+            "Party": "R",
+            "House": "Senate",
+            "Ticker": "TSLA",
+            "Transaction": "Purchase",
+            "Amount": "$250,001 - $500,000",
+            "Date": "2026-01-20",
+            "ReportDate": "2026-02-10",
+        },
+    ]
+
+    with respx.mock() as router:
+        router.get("https://api.quiverquant.com/beta/live/congresstrading").mock(
+            return_value=httpx.Response(200, json=mock_trades)
+        )
+        result = await congressional_trades.ainvoke({}, config=tool_config)
+
+    assert "Congressional Stock Trades" in result
+    assert "Nancy Pelosi" in result
+    assert "NVDA" in result
+    assert "Tommy Tuberville" in result
+
+
+@pytest.mark.asyncio
+async def test_congressional_trades_by_politician(monkeypatch, tool_config):
+    """Filter by politician name."""
+    monkeypatch.setenv("MOCK_CONGRESS", "true")
+    # Use large days window so static mock dates (2025) always fall in range
+    result = await congressional_trades.ainvoke({"query": "Pelosi", "days": 3650}, config=tool_config)
+    assert "Pelosi" in result
+    assert "Tuberville" not in result
+
+
+@pytest.mark.asyncio
+async def test_congressional_trades_by_ticker(monkeypatch, tool_config):
+    """Filter by ticker symbol."""
+    monkeypatch.setenv("MOCK_CONGRESS", "true")
+    # Use large days window so static mock dates (2025) always fall in range
+    result = await congressional_trades.ainvoke({"ticker": "NVDA", "days": 3650}, config=tool_config)
+    assert "NVDA" in result
+    # All rows should be NVDA only
+    assert "CRM" not in result
+
+
+@pytest.mark.asyncio
+async def test_congressional_trades_empty(monkeypatch, tool_config):
+    """No results returns friendly message."""
+    monkeypatch.setenv("QUIVER_AUTHORIZATION_TOKEN", "test-token")
+
+    with respx.mock() as router:
+        router.get("https://api.quiverquant.com/beta/live/congresstrading").mock(
+            return_value=httpx.Response(200, json=[])
+        )
+        result = await congressional_trades.ainvoke({}, config=tool_config)
+
+    assert "No congressional trading data" in result
+
+
+@pytest.mark.asyncio
+async def test_congressional_trades_error(monkeypatch, tool_config):
+    """API error returns friendly message."""
+    monkeypatch.setenv("QUIVER_AUTHORIZATION_TOKEN", "test-token")
+
+    with respx.mock() as router:
+        router.get("https://api.quiverquant.com/beta/live/congresstrading").mock(
+            return_value=httpx.Response(500, text="Internal Server Error")
+        )
+        result = await congressional_trades.ainvoke({}, config=tool_config)
+
+    assert "Error fetching congressional trades" in result

@@ -21,6 +21,13 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { marked } from 'marked';
 
+interface Politician {
+  name: string;
+  chamber: string;
+  party: string;
+  initials: string;
+}
+
 interface ChatMessage {
   role: 'user' | 'agent';
   content: string;
@@ -60,6 +67,7 @@ export class GfChatPageComponent implements AfterViewChecked, OnInit {
   public isLoadingHistory = true;
   public messageInput = '';
   public messages: ChatMessage[] = [];
+  public politicians: Politician[] = [];
 
   private shouldScrollToBottom = false;
 
@@ -72,6 +80,13 @@ export class GfChatPageComponent implements AfterViewChecked, OnInit {
   }
 
   public ngOnInit() {
+    this.dataService.getPoliticians().subscribe({
+      next: (politicians) => {
+        this.politicians = politicians;
+        this.changeDetectorRef.markForCheck();
+      }
+    });
+
     this.dataService.getChatHistory().subscribe({
       next: (response) => {
         this.messages = response.history.map((msg) => ({
@@ -182,6 +197,11 @@ export class GfChatPageComponent implements AfterViewChecked, OnInit {
 
   public onSuggestionClick(suggestion: string) {
     this.messageInput = suggestion;
+    this.onSendMessage();
+  }
+
+  public onPoliticianClick(politician: Politician) {
+    this.messageInput = `Show me ${politician.name}'s recent stock trades`;
     this.onSendMessage();
   }
 

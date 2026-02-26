@@ -95,6 +95,21 @@ export class AiService {
     return response.json();
   }
 
+  public async getPoliticians(): Promise<
+    { name: string; chamber: string; party: string; initials: string }[]
+  > {
+    const response = await fetch(`${this.agentApiUrl}/api/politicians`);
+
+    if (!response.ok) {
+      this.logger.error(
+        `Agent API returned ${response.status}: ${response.statusText}`
+      );
+      throw new Error(`Agent API error: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
   public async getAdminOverview(): Promise<AiAdminOverviewResponse> {
     const response = await fetch(`${this.agentApiUrl}/admin/overview`);
 

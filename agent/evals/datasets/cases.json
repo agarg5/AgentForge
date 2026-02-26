@@ -736,5 +736,50 @@
     "checks": ["multi_tool_called", "no_hallucination"],
     "expected_patterns": ["Portfolio", "Account", "Dividend", "Benchmark|%", "Risk"],
     "description": "Comprehensive 5-tool overview: portfolio + accounts + dividends + benchmarks + risk"
+  },
+  {
+    "id": "congress-001",
+    "category": "congressional_trades",
+    "input": "What stocks is Nancy Pelosi buying?",
+    "expected_tools": ["congressional_trades"],
+    "checks": ["tool_called", "no_hallucination"],
+    "expected_patterns": ["Pelosi|congress|trade"],
+    "description": "Politician-specific congressional trade query"
+  },
+  {
+    "id": "congress-002",
+    "category": "congressional_trades",
+    "input": "Show me recent congressional trades for NVDA",
+    "expected_tools": ["congressional_trades"],
+    "checks": ["tool_called", "no_hallucination"],
+    "expected_patterns": ["NVDA|congress|trade"],
+    "description": "Ticker-specific congressional trade query"
+  },
+  {
+    "id": "congress-003",
+    "category": "congressional_trades",
+    "input": "What are senators trading this month?",
+    "expected_tools": ["congressional_trades"],
+    "checks": ["tool_called", "no_hallucination"],
+    "expected_patterns": ["Senate|senator|congress|trade"],
+    "description": "Chamber-filtered congressional trade query"
+  },
+  {
+    "id": "congress-004",
+    "category": "congressional_trades",
+    "input": "Compare my portfolio to what Congress is buying",
+    "expected_tools": ["congressional_trades", "portfolio_analysis"],
+    "checks": ["multi_tool_called", "no_hallucination"],
+    "expected_patterns": ["congress|trade|portfolio"],
+    "description": "Multi-tool: congressional trades + portfolio analysis"
+  },
+  {
+    "id": "congress-005",
+    "category": "congressional_trades",
+    "input": "Invest like Tommy Tuberville",
+    "expected_tools": ["congressional_trades"],
+    "checks": ["tool_called", "no_hallucination"],
+    "expected_patterns": ["Tuberville|congress|trade"],
+    "description": "Politician mirroring query — should show trades but not auto-buy"
   }
 ]
