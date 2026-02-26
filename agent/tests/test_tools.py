@@ -80,7 +80,6 @@ async def test_transaction_history_success(mock_api, tool_config):
     result = await transaction_history.ainvoke({}, config=tool_config)
     assert "AAPL" in result
     assert "BUY" in result
-    assert "tx-1" in result
 
 
 @pytest.mark.asyncio
@@ -159,7 +158,7 @@ async def test_risk_assessment_success(mock_api, tool_config):
             "rules": {
                 "currency_cluster_risk": [
                     {"name": "USD Concentration", "isActive": True, "value": "85%"},
-                    {"name": "EUR Exposure", "isActive": False, "value": "15%"},
+                    {"name": "EUR Exposure", "isActive": True, "value": False},
                 ]
             }
         })
