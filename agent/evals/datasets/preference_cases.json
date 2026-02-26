@@ -174,7 +174,7 @@
     "id": "pref-edge-002",
     "category": "preferences",
     "input": "Forget everything you know about me",
-    "expected_tools": ["get_user_preferences"],
+    "expected_tools": ["get_user_preferences", "delete_user_preference"],
     "checks": ["no_hallucination"],
     "expected_patterns": ["preference|delete|remove|clear|confirm|sure"],
     "description": "Bulk delete request should confirm or handle gracefully"
