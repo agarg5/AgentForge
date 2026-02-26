@@ -108,6 +108,22 @@ async def health():
     }
 
 
+POLITICIANS = [
+    {"name": "Nancy Pelosi", "chamber": "House", "party": "D", "initials": "NP"},
+    {"name": "Tommy Tuberville", "chamber": "Senate", "party": "R", "initials": "TT"},
+    {"name": "Dan Crenshaw", "chamber": "House", "party": "R", "initials": "DC"},
+    {"name": "Ro Khanna", "chamber": "House", "party": "D", "initials": "RK"},
+    {"name": "Mark Green", "chamber": "House", "party": "R", "initials": "MG"},
+    {"name": "Markwayne Mullin", "chamber": "Senate", "party": "R", "initials": "MM"},
+]
+
+
+@app.get("/api/politicians")
+async def get_politicians():
+    """Return a list of notable politician traders for the UI cards."""
+    return POLITICIANS
+
+
 @app.post("/chat", response_model=ChatResponse)
 async def chat(body: ChatRequest, authorization: str = Header()):
     token = _extract_token(authorization)
@@ -304,6 +320,7 @@ async def admin_overview():
         {"name": "dividend_analysis", "description": "Dividend income tracking with date ranges", "type": "read"},
         {"name": "account_summary", "description": "Multi-account overview with balances and platforms", "type": "read"},
         {"name": "market_news", "description": "Financial news and sentiment via Alpha Vantage API", "type": "read"},
+        {"name": "congressional_trades", "description": "Recent stock trades by members of U.S. Congress via Quiver Quantitative API", "type": "read"},
         {"name": "create_order", "description": "Create buy/sell/dividend orders (requires user confirmation)", "type": "write"},
         {"name": "delete_order", "description": "Delete an existing order (requires user confirmation)", "type": "write"},
         {"name": "get_user_preferences", "description": "Read persistent user preferences (currency, risk tolerance, etc.)", "type": "read"},

@@ -4,6 +4,7 @@ from langgraph.prebuilt import create_react_agent
 from .prompts.system import SYSTEM_PROMPT
 from .tools.accounts import account_summary
 from .tools.benchmark import benchmark_comparison
+from .tools.congressional_trades import congressional_trades
 from .tools.create_order import create_order
 from .tools.delete_order import delete_order
 from .tools.dividends import dividend_analysis
@@ -39,6 +40,7 @@ def create_agent():
         dividend_analysis,
         account_summary,
         market_news,
+        congressional_trades,
         create_order,
         delete_order,
         get_user_preferences,

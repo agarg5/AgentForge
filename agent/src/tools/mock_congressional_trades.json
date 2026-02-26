@@ -1,0 +1,202 @@
+[
+  {
+    "Representative": "Nancy Pelosi",
+    "Party": "D",
+    "House": "House",
+    "Ticker": "NVDA",
+    "Transaction": "Purchase",
+    "Amount": "$1,000,001 - $5,000,000",
+    "Date": "2025-12-20",
+    "ReportDate": "2026-01-15"
+  },
+  {
+    "Representative": "Nancy Pelosi",
+    "Party": "D",
+    "House": "House",
+    "Ticker": "AAPL",
+    "Transaction": "Purchase",
+    "Amount": "$500,001 - $1,000,000",
+    "Date": "2025-12-18",
+    "ReportDate": "2026-01-14"
+  },
+  {
+    "Representative": "Tommy Tuberville",
+    "Party": "R",
+    "House": "Senate",
+    "Ticker": "TSLA",
+    "Transaction": "Purchase",
+    "Amount": "$250,001 - $500,000",
+    "Date": "2025-12-15",
+    "ReportDate": "2026-01-10"
+  },
+  {
+    "Representative": "Tommy Tuberville",
+    "Party": "R",
+    "House": "Senate",
+    "Ticker": "MSFT",
+    "Transaction": "Sale (Full)",
+    "Amount": "$100,001 - $250,000",
+    "Date": "2025-12-12",
+    "ReportDate": "2026-01-08"
+  },
+  {
+    "Representative": "Dan Crenshaw",
+    "Party": "R",
+    "House": "House",
+    "Ticker": "NVDA",
+    "Transaction": "Purchase",
+    "Amount": "$15,001 - $50,000",
+    "Date": "2025-12-10",
+    "ReportDate": "2026-01-05"
+  },
+  {
+    "Representative": "Mark Green",
+    "Party": "R",
+    "House": "House",
+    "Ticker": "GOOG",
+    "Transaction": "Purchase",
+    "Amount": "$1,001 - $15,000",
+    "Date": "2025-12-08",
+    "ReportDate": "2026-01-03"
+  },
+  {
+    "Representative": "Ro Khanna",
+    "Party": "D",
+    "House": "House",
+    "Ticker": "CRM",
+    "Transaction": "Sale (Partial)",
+    "Amount": "$50,001 - $100,000",
+    "Date": "2025-12-05",
+    "ReportDate": "2025-12-30"
+  },
+  {
+    "Representative": "Josh Gottheimer",
+    "Party": "D",
+    "House": "House",
+    "Ticker": "AMZN",
+    "Transaction": "Purchase",
+    "Amount": "$100,001 - $250,000",
+    "Date": "2025-12-03",
+    "ReportDate": "2025-12-28"
+  },
+  {
+    "Representative": "Markwayne Mullin",
+    "Party": "R",
+    "House": "Senate",
+    "Ticker": "XOM",
+    "Transaction": "Purchase",
+    "Amount": "$50,001 - $100,000",
+    "Date": "2025-12-01",
+    "ReportDate": "2025-12-26"
+  },
+  {
+    "Representative": "Sheldon Whitehouse",
+    "Party": "D",
+    "House": "Senate",
+    "Ticker": "MSFT",
+    "Transaction": "Purchase",
+    "Amount": "$15,001 - $50,000",
+    "Date": "2025-11-28",
+    "ReportDate": "2025-12-22"
+  },
+  {
+    "Representative": "Nancy Pelosi",
+    "Party": "D",
+    "House": "House",
+    "Ticker": "GOOGL",
+    "Transaction": "Sale (Partial)",
+    "Amount": "$250,001 - $500,000",
+    "Date": "2025-11-25",
+    "ReportDate": "2025-12-20"
+  },
+  {
+    "Representative": "Tommy Tuberville",
+    "Party": "R",
+    "House": "Senate",
+    "Ticker": "NVDA",
+    "Transaction": "Purchase",
+    "Amount": "$100,001 - $250,000",
+    "Date": "2025-11-22",
+    "ReportDate": "2025-12-17"
+  },
+  {
+    "Representative": "Dan Crenshaw",
+    "Party": "R",
+    "House": "House",
+    "Ticker": "META",
+    "Transaction": "Purchase",
+    "Amount": "$15,001 - $50,000",
+    "Date": "2025-11-20",
+    "ReportDate": "2025-12-15"
+  },
+  {
+    "Representative": "Ro Khanna",
+    "Party": "D",
+    "House": "House",
+    "Ticker": "AAPL",
+    "Transaction": "Purchase",
+    "Amount": "$1,001 - $15,000",
+    "Date": "2025-11-18",
+    "ReportDate": "2025-12-13"
+  },
+  {
+    "Representative": "Mark Green",
+    "Party": "R",
+    "House": "House",
+    "Ticker": "LMT",
+    "Transaction": "Purchase",
+    "Amount": "$50,001 - $100,000",
+    "Date": "2025-11-15",
+    "ReportDate": "2025-12-10"
+  },
+  {
+    "Representative": "Josh Gottheimer",
+    "Party": "D",
+    "House": "House",
+    "Ticker": "MSFT",
+    "Transaction": "Sale (Full)",
+    "Amount": "$250,001 - $500,000",
+    "Date": "2025-11-12",
+    "ReportDate": "2025-12-07"
+  },
+  {
+    "Representative": "Markwayne Mullin",
+    "Party": "R",
+    "House": "Senate",
+    "Ticker": "CVX",
+    "Transaction": "Purchase",
+    "Amount": "$15,001 - $50,000",
+    "Date": "2025-11-10",
+    "ReportDate": "2025-12-05"
+  },
+  {
+    "Representative": "Tommy Tuberville",
+    "Party": "R",
+    "House": "Senate",
+    "Ticker": "AAPL",
+    "Transaction": "Sale (Partial)",
+    "Amount": "$50,001 - $100,000",
+    "Date": "2025-11-08",
+    "ReportDate": "2025-12-03"
+  },
+  {
+    "Representative": "Sheldon Whitehouse",
+    "Party": "D",
+    "House": "Senate",
+    "Ticker": "AMZN",
+    "Transaction": "Purchase",
+    "Amount": "$1,001 - $15,000",
+    "Date": "2025-11-05",
+    "ReportDate": "2025-11-30"
+  },
+  {
+    "Representative": "Nancy Pelosi",
+    "Party": "D",
+    "House": "House",
+    "Ticker": "RBLX",
+    "Transaction": "Purchase",
+    "Amount": "$500,001 - $1,000,000",
+    "Date": "2025-11-01",
+    "ReportDate": "2025-11-26"
+  }
+]
