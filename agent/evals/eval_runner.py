@@ -418,15 +418,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="AgentForge eval runner")
     parser.add_argument(
         "--output", "-o",
-        help="Save structured results to a JSON file (default: auto-save to evals/results/)",
-    )
-    parser.add_argument(
-        "--no-save", action="store_true",
-        help="Skip auto-saving results to evals/results/",
-    )
-    parser.add_argument(
-        "--report", action="store_true",
-        help="Generate and open an HTML report after the run",
+        help="Save structured results to a JSON file",
     )
     return parser.parse_args()
 
@@ -470,27 +462,8 @@ async def main():
     elapsed = time.monotonic() - start
     exit_code = print_report(results_list, elapsed)
 
-    # Auto-save results to evals/results/ unless --no-save
-    output_path = args.output
-    if not output_path and not args.no_save:
-        results_dir = Path(__file__).resolve().parent / "results"
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        output_path = str(results_dir / f"{timestamp}.json")
-
-    if output_path:
-        save_results_json(results_list, elapsed, output_path)
-
-    # Generate HTML report if requested
-    if args.report and output_path:
-        from generate_report import generate_html, load_results
-        data, source_path = load_results(output_path)
-        html = generate_html(data)
-        html_path = source_path.with_suffix(".html")
-        with open(html_path, "w") as f:
-            f.write(html)
-        print(f"HTML report: {html_path}")
-        import webbrowser
-        webbrowser.open(f"file://{html_path.resolve()}")
+    if args.output:
+        save_results_json(results_list, elapsed, args.output)
 
     sys.exit(exit_code)
 
