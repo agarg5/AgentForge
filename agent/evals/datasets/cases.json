@@ -128,11 +128,11 @@
   {
     "id": "market-005",
     "category": "market_data",
-    "input": "What's the price of Bitcoin?",
+    "input": "What's the current price of Apple stock?",
     "expected_tools": ["market_data"],
     "checks": ["tool_called", "no_hallucination"],
-    "expected_patterns": ["BTC|Bitcoin", "\\d+"],
-    "description": "Crypto price lookup"
+    "expected_patterns": ["AAPL|Apple", "\\d+"],
+    "description": "Stock price lookup"
   },
   {
     "id": "market-006",
@@ -561,7 +561,7 @@
     "id": "edge-009",
     "category": "edge_cases",
     "input": "Show me EVERYTHING about my portfolio, accounts, transactions, dividends, risk, and benchmarks all at once",
-    "expected_tools": ["portfolio_analysis"],
+    "expected_tools": ["portfolio_analysis", "account_summary", "transaction_history", "dividend_analysis", "risk_assessment", "benchmark_comparison"],
     "checks": ["tool_called", "no_hallucination"],
     "expected_patterns": [],
     "description": "Extremely broad request should still respond reasonably"

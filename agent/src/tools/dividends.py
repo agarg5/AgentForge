@@ -14,8 +14,10 @@ async def dividend_analysis(
     *,
     config: RunnableConfig,
 ) -> str:
-    """Analyze dividend income from the portfolio. Returns dividend
-    payments grouped by month, with totals and investment amounts.
+    """Analyze dividend income, dividend history, and dividend payments from the
+    portfolio. Returns dividend payments grouped by month, with totals and
+    investment amounts. Use this tool for any questions about dividends,
+    dividend yield, dividend income, or dividend history.
 
     Args:
         range: Time range for dividend data. Options: 1d, ytd, 1y, 5y, max.
