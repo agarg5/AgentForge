@@ -45,9 +45,23 @@ Thumbs.db
 
 # Project-specific
 .claude
+.claude/*
 assignment.pdf
 pre-search.md
 pre-search.pdf
 agent/.env
 
-.claude/*
+# Worktrees
+.worktrees/
+
+# Python
+__pycache__/
+*.egg-info/
+
+# Agent artifacts
+agent/evals/results/
+agent/results/
+
+# Generated/local docs
+demo-recording-script.md
+demo-video-guide.md
