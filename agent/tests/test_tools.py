@@ -410,7 +410,7 @@ async def test_delete_order_empty_id(mock_api, tool_config):
 @pytest.mark.asyncio
 async def test_congressional_trades_success(monkeypatch, tool_config):
     """Mock API returns trades, verify markdown table output."""
-    monkeypatch.setenv("QUIVER_AUTHORIZATION_TOKEN", "test-token")
+    monkeypatch.setenv("QUIZER_AUTHORIZATION_TOKEN", "test-token")
     mock_trades = [
         {
             "Representative": "Nancy Pelosi",
@@ -470,7 +470,7 @@ async def test_congressional_trades_by_ticker(monkeypatch, tool_config):
 @pytest.mark.asyncio
 async def test_congressional_trades_empty(monkeypatch, tool_config):
     """No results returns friendly message."""
-    monkeypatch.setenv("QUIVER_AUTHORIZATION_TOKEN", "test-token")
+    monkeypatch.setenv("QUIZER_AUTHORIZATION_TOKEN", "test-token")
 
     with respx.mock() as router:
         router.get("https://api.quiverquant.com/beta/live/congresstrading").mock(
@@ -484,7 +484,7 @@ async def test_congressional_trades_empty(monkeypatch, tool_config):
 @pytest.mark.asyncio
 async def test_congressional_trades_error(monkeypatch, tool_config):
     """API error returns friendly message."""
-    monkeypatch.setenv("QUIVER_AUTHORIZATION_TOKEN", "test-token")
+    monkeypatch.setenv("QUIZER_AUTHORIZATION_TOKEN", "test-token")
 
     with respx.mock() as router:
         router.get("https://api.quiverquant.com/beta/live/congresstrading").mock(
