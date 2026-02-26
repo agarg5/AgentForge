@@ -450,7 +450,8 @@ async def test_congressional_trades_success(monkeypatch, tool_config):
 async def test_congressional_trades_by_politician(monkeypatch, tool_config):
     """Filter by politician name."""
     monkeypatch.setenv("MOCK_CONGRESS", "true")
-    result = await congressional_trades.ainvoke({"query": "Pelosi"}, config=tool_config)
+    # Use large days window so static mock dates (2025) always fall in range
+    result = await congressional_trades.ainvoke({"query": "Pelosi", "days": 3650}, config=tool_config)
     assert "Pelosi" in result
     assert "Tuberville" not in result
 
@@ -459,7 +460,8 @@ async def test_congressional_trades_by_politician(monkeypatch, tool_config):
 async def test_congressional_trades_by_ticker(monkeypatch, tool_config):
     """Filter by ticker symbol."""
     monkeypatch.setenv("MOCK_CONGRESS", "true")
-    result = await congressional_trades.ainvoke({"ticker": "NVDA"}, config=tool_config)
+    # Use large days window so static mock dates (2025) always fall in range
+    result = await congressional_trades.ainvoke({"ticker": "NVDA", "days": 3650}, config=tool_config)
     assert "NVDA" in result
     # All rows should be NVDA only
     assert "CRM" not in result

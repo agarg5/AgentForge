@@ -38,7 +38,6 @@ async def dividend_analysis(
     lines = [f"**Dividend Analysis ({effective_range})**\n"]
 
     total_dividend = 0
-    total_investment = 0
 
     lines.append("| Date | Dividend | Currency |")
     lines.append("|------|----------|----------|")
