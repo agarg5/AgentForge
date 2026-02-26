@@ -415,20 +415,40 @@ def parse_args():
 async def main():
     args = parse_args()
     cases = load_all_cases()
-    print(f"Loaded {len(cases)} eval cases")
+    total = len(cases)
+    print(f"Loaded {total} eval cases")
     print(f"Agent: {BASE_URL}")
     print(f"Concurrency: {MAX_CONCURRENCY}")
     print()
 
     sem = asyncio.Semaphore(MAX_CONCURRENCY)
     start = time.monotonic()
+    completed = 0
+    passed = 0
 
     async with httpx.AsyncClient() as client:
         tasks = [run_case(sem, client, c) for c in cases]
-        results = await asyncio.gather(*tasks)
+        results_list: list[CaseResult] = []
+        for coro in asyncio.as_completed(tasks):
+            result = await coro
+            results_list.append(result)
+            completed += 1
+            # Count ToolsMatch pass for this case
+            tm = next((s for s in result.scores if s.name == "ToolsMatch"), None)
+            if tm and tm.score > 0:
+                passed += 1
+            elapsed_so_far = time.monotonic() - start
+            status = "OK" if (tm and tm.score > 0) else "FAIL" if tm else "??"
+            print(
+                f"\r  [{completed}/{total}] "
+                f"{status} {result.case_id:<28} "
+                f"tools={result.tools_used or 'none':<30} "
+                f"({elapsed_so_far:.0f}s elapsed, ToolsMatch: {passed}/{completed})",
+                end="", flush=True,
+            )
+        print()  # newline after progress
 
     elapsed = time.monotonic() - start
-    results_list = list(results)
     exit_code = print_report(results_list, elapsed)
 
     if args.output:
