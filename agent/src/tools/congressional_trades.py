@@ -10,7 +10,7 @@ import httpx
 from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import tool
 
-_QUIVER_BASE_URL = "https://api.quiverquant.com/beta/live/congresstrading"
+_QUIVER_BASE = "https://api.quiverquant.com/beta"
 _MOCK_DATA_PATH = Path(__file__).resolve().parent / "mock_congressional_trades.json"
 
 
@@ -44,11 +44,26 @@ async def congressional_trades(
                 "Please configure it to use the congressional trades tool."
             )
 
+        # Pick the most specific endpoint to minimize data transfer
+        if ticker:
+            url = f"{_QUIVER_BASE}/historical/congresstrading/{ticker.upper()}"
+            params = {}
+        elif chamber and chamber.lower() == "house":
+            url = f"{_QUIVER_BASE}/live/housetrading"
+            params = {"representative": query} if query else {}
+        elif chamber and chamber.lower() == "senate":
+            url = f"{_QUIVER_BASE}/live/senatetrading"
+            params = {"representative": query} if query else {}
+        else:
+            url = f"{_QUIVER_BASE}/live/congresstrading"
+            params = {"representative": query} if query else {}
+
         try:
             async with httpx.AsyncClient(timeout=30) as client:
                 response = await client.get(
-                    _QUIVER_BASE_URL,
+                    url,
                     headers={"Authorization": f"Bearer {api_token}"},
+                    params=params,
                 )
                 response.raise_for_status()
                 trades = response.json()
@@ -66,7 +81,7 @@ async def congressional_trades(
     cutoff = datetime.now() - timedelta(days=days)
     filtered = []
     for trade in trades:
-        trade_date_str = trade.get("Date") or trade.get("TransactionDate", "")
+        trade_date_str = trade.get("TransactionDate") or trade.get("Date", "")
         if trade_date_str:
             try:
                 trade_date = datetime.strptime(trade_date_str[:10], "%Y-%m-%d")
@@ -76,27 +91,28 @@ async def congressional_trades(
                 pass
         filtered.append(trade)
 
-    # Filter by politician name
-    if query:
+    # Filter by politician name (client-side fallback for mock mode)
+    if query and os.environ.get("MOCK_CONGRESS", "").lower() in ("1", "true", "yes"):
         q = query.lower()
         filtered = [
             t for t in filtered
             if q in t.get("Representative", "").lower()
         ]
 
-    # Filter by chamber
-    if chamber:
+    # Filter by chamber (client-side fallback for mock mode)
+    if chamber and os.environ.get("MOCK_CONGRESS", "").lower() in ("1", "true", "yes"):
         c = chamber.lower()
         if c not in ("senate", "house"):
             return "Error: chamber must be 'senate' or 'house'."
-        # Quiver uses "Senate" / "House" in the House field
+        chamber_map = {"senate": "senate", "house": "representatives"}
+        target = chamber_map[c]
         filtered = [
             t for t in filtered
-            if t.get("House", "").lower() == c
+            if t.get("House", "").lower() == target
         ]
 
-    # Filter by ticker
-    if ticker:
+    # Filter by ticker (client-side fallback for mock mode)
+    if ticker and os.environ.get("MOCK_CONGRESS", "").lower() in ("1", "true", "yes"):
         t_upper = ticker.upper()
         filtered = [
             t for t in filtered
@@ -116,7 +132,7 @@ async def congressional_trades(
 
     # Sort by date descending
     filtered.sort(
-        key=lambda t: t.get("Date") or t.get("TransactionDate", ""),
+        key=lambda t: t.get("TransactionDate") or t.get("Date", ""),
         reverse=True,
     )
 
@@ -138,8 +154,8 @@ async def congressional_trades(
         house = t.get("House", "N/A")
         tick = t.get("Ticker", "N/A")
         tx_type = t.get("Transaction", "N/A")
-        amount = t.get("Amount", t.get("Range", "N/A"))
-        date = (t.get("Date") or t.get("TransactionDate", "N/A"))[:10]
+        amount = t.get("Range") or t.get("Amount", "N/A")
+        date = (t.get("TransactionDate") or t.get("Date", "N/A"))[:10]
         report_date = (t.get("ReportDate", "N/A"))[:10] if t.get("ReportDate") else "N/A"
 
         lines.append(
