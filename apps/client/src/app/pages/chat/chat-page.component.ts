@@ -26,6 +26,7 @@ interface Politician {
   chamber: string;
   party: string;
   initials: string;
+  image: string;
 }
 
 interface ChatMessage {

@@ -863,7 +863,7 @@ export class DataService {
 
   public getPoliticians() {
     return this.http.get<
-      { name: string; chamber: string; party: string; initials: string }[]
+      { name: string; chamber: string; party: string; initials: string; image: string }[]
     >('/api/v1/ai/politicians');
   }
 

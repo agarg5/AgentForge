@@ -109,12 +109,12 @@ async def health():
 
 
 POLITICIANS = [
-    {"name": "Nancy Pelosi", "chamber": "House", "party": "D", "initials": "NP"},
-    {"name": "Tommy Tuberville", "chamber": "Senate", "party": "R", "initials": "TT"},
-    {"name": "Dan Crenshaw", "chamber": "House", "party": "R", "initials": "DC"},
-    {"name": "Ro Khanna", "chamber": "House", "party": "D", "initials": "RK"},
-    {"name": "Mark Green", "chamber": "House", "party": "R", "initials": "MG"},
-    {"name": "Markwayne Mullin", "chamber": "Senate", "party": "R", "initials": "MM"},
+    {"name": "Nancy Pelosi", "chamber": "House", "party": "D", "initials": "NP", "image": "https://bioguide.congress.gov/photo/P000197.jpg"},
+    {"name": "Tommy Tuberville", "chamber": "Senate", "party": "R", "initials": "TT", "image": "https://bioguide.congress.gov/photo/T000278.jpg"},
+    {"name": "Dan Crenshaw", "chamber": "House", "party": "R", "initials": "DC", "image": "https://bioguide.congress.gov/photo/C001120.jpg"},
+    {"name": "Ro Khanna", "chamber": "House", "party": "D", "initials": "RK", "image": "https://bioguide.congress.gov/photo/K000389.jpg"},
+    {"name": "Mark Green", "chamber": "House", "party": "R", "initials": "MG", "image": "https://bioguide.congress.gov/photo/G000590.jpg"},
+    {"name": "Markwayne Mullin", "chamber": "Senate", "party": "R", "initials": "MM", "image": "https://bioguide.congress.gov/photo/M001190.jpg"},
 ]
 
 

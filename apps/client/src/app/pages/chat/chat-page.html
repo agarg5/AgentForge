@@ -24,7 +24,12 @@
                     [class.party-d]="politician.party === 'D'"
                     [class.party-r]="politician.party === 'R'"
                   >
-                    {{ politician.initials }}
+                    <img
+                      [src]="politician.image"
+                      [alt]="politician.name"
+                      class="politician-photo"
+                      referrerpolicy="no-referrer"
+                    />
                   </div>
                   <span class="politician-name">{{ politician.name.split(' ').pop() }}</span>
                 </button>

@@ -96,7 +96,7 @@ export class AiService {
   }
 
   public async getPoliticians(): Promise<
-    { name: string; chamber: string; party: string; initials: string }[]
+    { name: string; chamber: string; party: string; initials: string; image: string }[]
   > {
     const response = await fetch(`${this.agentApiUrl}/api/politicians`);
 
