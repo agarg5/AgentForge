@@ -7,7 +7,7 @@ Usage:
     python agent/evals/eval_runner.py
 
 Environment:
-    AGENT_BASE_URL      - Agent API base URL (default: http://localhost:8000)
+    AGENT_BASE_URL      - Agent API base URL (default: https://agent-production-b7bc.up.railway.app)
     AGENT_AUTH_TOKEN     - Ghostfolio bearer token
 """
 
@@ -27,7 +27,7 @@ import httpx
 import yaml
 
 DATASETS_DIR = Path(__file__).resolve().parent / "datasets"
-BASE_URL = os.environ.get("AGENT_BASE_URL", "http://localhost:8000")
+BASE_URL = os.environ.get("AGENT_BASE_URL", "https://agent-production-b7bc.up.railway.app")
 AUTH_TOKEN = os.environ.get("AGENT_AUTH_TOKEN", "")
 MAX_CONCURRENCY = int(os.environ.get("EVAL_MAX_CONCURRENCY", "20"))
 
@@ -442,7 +442,7 @@ async def main():
             print(
                 f"\r  [{completed}/{total}] "
                 f"{status} {result.case_id:<28} "
-                f"tools={result.tools_used or 'none':<30} "
+                f"tools={str(result.tools_used or 'none'):<30} "
                 f"({elapsed_so_far:.0f}s elapsed, ToolsMatch: {passed}/{completed})",
                 end="", flush=True,
             )
