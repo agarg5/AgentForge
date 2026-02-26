@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 import time
@@ -170,9 +171,12 @@ async def chat(body: ChatRequest, authorization: str = Header()):
     try:
         async with GhostfolioClient(base_url=GHOSTFOLIO_BASE_URL, auth_token=token) as client:
             run_config["configurable"]["client"] = client
-            result = await agent.ainvoke(
-                {"messages": messages},
-                config=run_config,
+            result = await asyncio.wait_for(
+                agent.ainvoke(
+                    {"messages": messages},
+                    config=run_config,
+                ),
+                timeout=45,
             )
     except GraphRecursionError:
         elapsed = time.monotonic() - start_time
@@ -181,6 +185,14 @@ async def chat(body: ChatRequest, authorization: str = Header()):
             content="I ran into a complexity limit while processing your request. Could you try rephrasing with a more specific question?",
             run_id=run_id,
             metrics={"error": "recursion_limit_reached", "latency_seconds": round(elapsed, 3)},
+        )
+    except asyncio.TimeoutError:
+        elapsed = time.monotonic() - start_time
+        logger.error("Agent timed out run_id=%s latency=%.2fs", run_id, elapsed)
+        return ChatResponse(
+            content="Your request timed out. Please try a simpler or more specific question.",
+            run_id=run_id,
+            metrics={"error": "request_timeout", "latency_seconds": round(elapsed, 3)},
         )
     except Exception as e:
         elapsed = time.monotonic() - start_time

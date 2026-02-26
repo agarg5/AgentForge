@@ -18,7 +18,7 @@ from .tools.transactions import transaction_history
 # answer.  Each "step" is one LLM call → tool call → observation cycle.
 # This prevents runaway loops (e.g. repeated failing tool calls).
 # LangGraph counts each node invocation as one step toward the limit.
-MAX_AGENT_STEPS = 25
+MAX_AGENT_STEPS = 15
 
 
 def create_agent():
@@ -27,7 +27,7 @@ def create_agent():
         model="gpt-4o",
         temperature=0,
         max_retries=5,  # Retry on 429 rate limit errors with exponential backoff
-        request_timeout=60,
+        request_timeout=30,
     )
 
     tools = [
