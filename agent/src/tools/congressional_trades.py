@@ -37,10 +37,10 @@ async def congressional_trades(
         with open(_MOCK_DATA_PATH) as f:
             trades = json.load(f)
     else:
-        api_token = os.environ.get("QUIZER_AUTHORIZATION_TOKEN")
+        api_token = os.environ.get("QUIVER_AUTHORIZATION_TOKEN")
         if not api_token:
             return (
-                "Error: QUIZER_AUTHORIZATION_TOKEN environment variable is not set. "
+                "Error: QUIVER_AUTHORIZATION_TOKEN environment variable is not set. "
                 "Please configure it to use the congressional trades tool."
             )
 
