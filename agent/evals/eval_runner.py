@@ -13,12 +13,14 @@ Environment:
 
 from __future__ import annotations
 
+import argparse
 import asyncio
 import json
 import os
 import sys
 import time
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
+from datetime import datetime, timezone
 from pathlib import Path
 
 import httpx
@@ -362,11 +364,56 @@ def print_report(results: list[CaseResult], elapsed: float):
     return 0 if tools_avg >= 0.80 else 1
 
 
+def save_results_json(results: list[CaseResult], elapsed: float, output_path: str):
+    """Save structured eval results to a JSON file."""
+    scorer_totals: dict[str, list[float]] = {}
+    for r in results:
+        for s in r.scores:
+            scorer_totals.setdefault(s.name, []).append(s.score)
+
+    summary = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "agent_url": BASE_URL,
+        "total_cases": len(results),
+        "elapsed_seconds": round(elapsed, 1),
+        "concurrency": MAX_CONCURRENCY,
+        "scorers": {
+            name: {
+                "score": round(sum(scores) / len(scores) * 100, 1),
+                "cases": len(scores),
+            }
+            for name, scores in sorted(scorer_totals.items())
+        },
+        "latency": {
+            "avg_seconds": round(sum(r.duration_s for r in results if not r.error) / max(len([r for r in results if not r.error]), 1), 2),
+            "max_seconds": round(max((r.duration_s for r in results if not r.error), default=0), 2),
+        },
+        "errors": len([r for r in results if r.error]),
+        "cases": [asdict(r) for r in results],
+    }
+
+    path = Path(output_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "w") as f:
+        json.dump(summary, f, indent=2)
+    print(f"\nResults saved to {path}")
+
+
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
+def parse_args():
+    parser = argparse.ArgumentParser(description="AgentForge eval runner")
+    parser.add_argument(
+        "--output", "-o",
+        help="Save structured results to a JSON file",
+    )
+    return parser.parse_args()
+
+
 async def main():
+    args = parse_args()
     cases = load_all_cases()
     print(f"Loaded {len(cases)} eval cases")
     print(f"Agent: {BASE_URL}")
@@ -381,7 +428,12 @@ async def main():
         results = await asyncio.gather(*tasks)
 
     elapsed = time.monotonic() - start
-    exit_code = print_report(list(results), elapsed)
+    results_list = list(results)
+    exit_code = print_report(results_list, elapsed)
+
+    if args.output:
+        save_results_json(results_list, elapsed, args.output)
+
     sys.exit(exit_code)
 
 
