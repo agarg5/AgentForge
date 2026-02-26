@@ -23,8 +23,11 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 
+import dotenv
 import httpx
 import yaml
+
+dotenv.load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 DATASETS_DIR = Path(__file__).resolve().parent / "datasets"
 BASE_URL = os.environ.get("AGENT_BASE_URL", "https://agent-production-b7bc.up.railway.app")
