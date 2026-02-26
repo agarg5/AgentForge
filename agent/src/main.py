@@ -111,6 +111,10 @@ async def health():
 async def chat(body: ChatRequest, authorization: str = Header()):
     token = _extract_token(authorization)
 
+    # Use session_id for chat history isolation when provided (e.g. evals),
+    # otherwise fall back to the auth token for normal chat.
+    history_key = body.session_id or token
+
     # Load persisted history if the frontend didn't send any
     messages = []
     if body.history:
@@ -120,7 +124,7 @@ async def chat(body: ChatRequest, authorization: str = Header()):
             elif msg.role in ("agent", "assistant"):
                 messages.append(AIMessage(content=msg.content))
     else:
-        stored_history = await chat_history_store.get_history(token)
+        stored_history = await chat_history_store.get_history(history_key)
         for msg in stored_history:
             if msg["role"] == "user":
                 messages.append(HumanMessage(content=msg["content"]))
@@ -235,8 +239,8 @@ async def chat(body: ChatRequest, authorization: str = Header()):
                     unique_tools.append(t)
 
             # Persist both messages to chat history
-            await chat_history_store.append_message(token, "user", body.message)
-            await chat_history_store.append_message(token, "agent", response_content)
+            await chat_history_store.append_message(history_key, "user", body.message)
+            await chat_history_store.append_message(history_key, "agent", response_content)
 
             return ChatResponse(
                 content=response_content,

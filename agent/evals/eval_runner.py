@@ -19,6 +19,7 @@ import json
 import os
 import sys
 import time
+import uuid
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -229,16 +230,20 @@ def score_no_hallucination(output: str, checks: list[str], tools_used: list[str]
 # Agent caller
 # ---------------------------------------------------------------------------
 
-async def call_agent(client: httpx.AsyncClient, query: str) -> tuple[str, list[str], float]:
+async def call_agent(client: httpx.AsyncClient, query: str, session_id: str | None = None) -> tuple[str, list[str], float]:
     """Call the agent API and return (content, tools_used, duration_seconds)."""
     headers = {}
     if AUTH_TOKEN:
         headers["Authorization"] = f"Bearer {AUTH_TOKEN}"
 
+    payload: dict = {"message": query}
+    if session_id:
+        payload["session_id"] = session_id
+
     start = time.monotonic()
     resp = await client.post(
         f"{BASE_URL}/chat",
-        json={"message": query},
+        json=payload,
         headers=headers,
         timeout=60,
     )
@@ -267,9 +272,12 @@ async def run_case(sem: asyncio.Semaphore, client: httpx.AsyncClient, case: dict
         duration_s=0,
     )
 
+    # Each eval case gets an isolated session to prevent history leakage
+    session_id = f"eval-{meta['id']}-{uuid.uuid4().hex[:8]}"
+
     async with sem:
         try:
-            content, tools_used, duration = await call_agent(client, case["input"])
+            content, tools_used, duration = await call_agent(client, case["input"], session_id=session_id)
             result.output = content
             result.tools_used = tools_used
             result.duration_s = duration
