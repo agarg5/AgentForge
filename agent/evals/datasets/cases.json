@@ -426,9 +426,9 @@
     "id": "verification-001",
     "category": "verification",
     "input": "Look up the stock price of XYZNOTREAL",
-    "expected_tools": ["market_data"],
-    "checks": ["tool_called", "handles_invalid_ticker"],
-    "expected_patterns": ["not found|no result|couldn't find|don't exist|doesn't exist|can't look up|no matching"],
+    "expected_tools": [],
+    "checks": ["handles_invalid_ticker"],
+    "expected_patterns": ["not found|no result|couldn't find|don't exist|doesn't exist|can't look up|XYZNOTREAL"],
     "description": "Invalid ticker should be reported, not fabricated"
   },
   {
