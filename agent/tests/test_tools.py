@@ -158,11 +158,25 @@ async def test_market_data_not_found(mock_api, tool_config):
 async def test_risk_assessment_success(mock_api, tool_config):
     mock_api.get("/api/v1/portfolio/report").mock(
         return_value=httpx.Response(200, json={
-            "rules": {
-                "currency_cluster_risk": [
-                    {"name": "USD Concentration", "isActive": True, "value": "85%"},
-                    {"name": "EUR Exposure", "isActive": False, "value": "15%"},
-                ]
+            "xRay": {
+                "categories": [
+                    {
+                        "key": "currencyClusterRisk",
+                        "name": "Currency Cluster Risks",
+                        "rules": [
+                            {"name": "USD Concentration", "isActive": True, "value": False, "evaluation": "Over 50% in USD"},
+                            {"name": "EUR Exposure", "isActive": False, "value": True, "evaluation": "OK"},
+                        ]
+                    },
+                    {
+                        "key": "fees",
+                        "name": "Fees",
+                        "rules": [
+                            {"name": "Fee Ratio", "isActive": True, "value": True, "evaluation": "Fees are low"},
+                        ]
+                    }
+                ],
+                "statistics": {"rulesActiveCount": 2, "rulesFulfilledCount": 1}
             }
         })
     )
@@ -175,7 +189,7 @@ async def test_risk_assessment_success(mock_api, tool_config):
 @pytest.mark.asyncio
 async def test_risk_assessment_empty(mock_api, tool_config):
     mock_api.get("/api/v1/portfolio/report").mock(
-        return_value=httpx.Response(200, json={"rules": {}})
+        return_value=httpx.Response(200, json={"xRay": {"categories": []}})
     )
     result = await risk_assessment.ainvoke({}, config=tool_config)
     assert "No risk analysis" in result

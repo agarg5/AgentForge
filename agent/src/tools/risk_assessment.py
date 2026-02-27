@@ -27,9 +27,18 @@ async def risk_assessment(
         report = await client.get_portfolio_report()
     except GhostfolioAPIError as e:
         return f"Error fetching risk report: {e}"
-    rules = report.get("rules", {})
+    # API returns data under xRay.categories (list of category objects)
+    categories = report.get("xRay", {}).get("categories", [])
 
-    if not rules:
+    if not categories:
+        # Fallback: try legacy flat "rules" dict format
+        categories = []
+        legacy_rules = report.get("rules", {})
+        if legacy_rules:
+            for key, rule_list in legacy_rules.items():
+                categories.append({"key": key, "name": key.replace("_", " ").title(), "rules": rule_list})
+
+    if not categories:
         return "No risk analysis data available."
 
     # Collect all rules across categories for summary scoring
@@ -40,7 +49,8 @@ async def risk_assessment(
     lines = ["**Portfolio Risk Assessment (X-Ray)**\n"]
 
     # First pass: count totals and collect warnings (skip inactive rules)
-    for _category, category_rules in rules.items():
+    for category_obj in categories:
+        category_rules = category_obj.get("rules", [])
         if not category_rules:
             continue
         for rule in category_rules:
@@ -59,8 +69,9 @@ async def risk_assessment(
     )
 
     # Detailed breakdown per category
-    for category, category_rules in rules.items():
-        category_label = category.replace("_", " ").title()
+    for category_obj in categories:
+        category_label = category_obj.get("name", category_obj.get("key", "Unknown"))
+        category_rules = category_obj.get("rules", [])
         lines.append(f"### {category_label}\n")
 
         if not category_rules:
