@@ -2,7 +2,7 @@
 
 ## Twitter/X (280 chars)
 
-Built an open-source AI financial assistant for Ghostfolio during @GauntletAI fellowship — 9 tools wrapping a real portfolio API, verification layer to prevent hallucinated prices, 150+ eval cases, LangSmith observability. LangChain + GPT-4o + FastAPI.
+Built an open-source AI financial assistant for Ghostfolio during @GauntletAI fellowship — 9 tools, verification layer, 150+ evals, LangSmith observability. Contributed a PR upstream and got added to Ghostfolio's community projects!
 
 github.com/agarg5/AgentForge
 
@@ -23,7 +23,7 @@ I'm excited to share AgentForge — an open-source AI agent I built for Ghostfol
 
 **Tech stack:** Python, LangChain, GPT-4o, FastAPI, LangGraph, LangSmith, Redis
 
-Also contributed an upstream PR to the Ghostfolio open-source project (ghostfolio#6397).
+Also contributed an upstream PR to the Ghostfolio open-source project (ghostfolio#6397), and AgentForge was added to the Ghostfolio community projects: https://github.com/topics/ghostfolio
 
 Built during the Gauntlet AI fellowship — an incredible experience pushing the boundaries of what AI agents can do in production.
 
