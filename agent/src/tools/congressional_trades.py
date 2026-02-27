@@ -10,7 +10,7 @@ import httpx
 from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import tool
 
-_QUIVER_BASE = "https://api.quiverquant.com/beta"
+_QUIVER_URL = "https://api.quiverquant.com/beta/live/congresstrading"
 _MOCK_DATA_PATH = Path(__file__).resolve().parent / "mock_congressional_trades.json"
 
 
@@ -44,26 +44,14 @@ async def congressional_trades(
                 "Please configure it to use the congressional trades tool."
             )
 
-        # Pick the most specific endpoint to minimize data transfer
-        if ticker:
-            url = f"{_QUIVER_BASE}/historical/congresstrading/{ticker.upper()}"
-            params = {}
-        elif chamber and chamber.lower() == "house":
-            url = f"{_QUIVER_BASE}/live/housetrading"
-            params = {"representative": query} if query else {}
-        elif chamber and chamber.lower() == "senate":
-            url = f"{_QUIVER_BASE}/live/senatetrading"
-            params = {"representative": query} if query else {}
-        else:
-            url = f"{_QUIVER_BASE}/live/congresstrading"
-            params = {"representative": query} if query else {}
-
         try:
-            async with httpx.AsyncClient(timeout=30) as client:
+            async with httpx.AsyncClient(timeout=45) as client:
                 response = await client.get(
-                    url,
-                    headers={"Authorization": f"Bearer {api_token}"},
-                    params=params,
+                    _QUIVER_URL,
+                    headers={
+                        "Authorization": f"Bearer {api_token}",
+                        "Accept": "application/json",
+                    },
                 )
                 response.raise_for_status()
                 trades = response.json()
@@ -91,19 +79,20 @@ async def congressional_trades(
                 pass
         filtered.append(trade)
 
-    # Filter by politician name (client-side fallback for mock mode)
-    if query and os.environ.get("MOCK_CONGRESS", "").lower() in ("1", "true", "yes"):
+    # Filter by politician name
+    if query:
         q = query.lower()
         filtered = [
             t for t in filtered
             if q in t.get("Representative", "").lower()
         ]
 
-    # Filter by chamber (client-side fallback for mock mode)
-    if chamber and os.environ.get("MOCK_CONGRESS", "").lower() in ("1", "true", "yes"):
+    # Filter by chamber
+    if chamber:
         c = chamber.lower()
         if c not in ("senate", "house"):
             return "Error: chamber must be 'senate' or 'house'."
+        # Quiver uses "Senate" / "Representatives" in the House field
         chamber_map = {"senate": "senate", "house": "representatives"}
         target = chamber_map[c]
         filtered = [
@@ -111,8 +100,8 @@ async def congressional_trades(
             if t.get("House", "").lower() == target
         ]
 
-    # Filter by ticker (client-side fallback for mock mode)
-    if ticker and os.environ.get("MOCK_CONGRESS", "").lower() in ("1", "true", "yes"):
+    # Filter by ticker
+    if ticker:
         t_upper = ticker.upper()
         filtered = [
             t for t in filtered
