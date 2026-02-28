@@ -861,6 +861,12 @@ export class DataService {
     return this.http.post<{ status: string }>('/api/v1/ai/feedback', feedback);
   }
 
+  public getPoliticians() {
+    return this.http.get<
+      { name: string; chamber: string; party: string; initials: string; image: string }[]
+    >('/api/v1/ai/politicians');
+  }
+
   public getAgentAdminOverview() {
     return this.http.get<AiAdminOverviewResponse>('/api/v1/ai/admin/overview');
   }

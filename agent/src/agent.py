@@ -4,6 +4,7 @@ from langgraph.prebuilt import create_react_agent
 from .prompts.system import SYSTEM_PROMPT
 from .tools.accounts import account_summary
 from .tools.benchmark import benchmark_comparison
+from .tools.congressional_trades import congressional_trades
 from .tools.create_order import create_order
 from .tools.delete_order import delete_order
 from .tools.dividends import dividend_analysis
@@ -18,7 +19,7 @@ from .tools.transactions import transaction_history
 # answer.  Each "step" is one LLM call → tool call → observation cycle.
 # This prevents runaway loops (e.g. repeated failing tool calls).
 # LangGraph counts each node invocation as one step toward the limit.
-MAX_AGENT_STEPS = 25
+MAX_AGENT_STEPS = 15
 
 
 def create_agent():
@@ -27,7 +28,7 @@ def create_agent():
         model="gpt-4o",
         temperature=0,
         max_retries=5,  # Retry on 429 rate limit errors with exponential backoff
-        request_timeout=60,
+        request_timeout=30,
     )
 
     tools = [
@@ -39,6 +40,7 @@ def create_agent():
         dividend_analysis,
         account_summary,
         market_news,
+        congressional_trades,
         create_order,
         delete_order,
         get_user_preferences,

@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 import time
@@ -107,6 +108,22 @@ async def health():
     }
 
 
+POLITICIANS = [
+    {"name": "Nancy Pelosi", "chamber": "House", "party": "D", "initials": "NP", "image": "https://bioguide.congress.gov/photo/P000197.jpg"},
+    {"name": "Tommy Tuberville", "chamber": "Senate", "party": "R", "initials": "TT", "image": "https://bioguide.congress.gov/photo/T000278.jpg"},
+    {"name": "Marjorie Taylor Greene", "chamber": "House", "party": "R", "initials": "MG", "image": "https://bioguide.congress.gov/photo/G000596.jpg"},
+    {"name": "Dan Crenshaw", "chamber": "House", "party": "R", "initials": "DC", "image": "https://bioguide.congress.gov/photo/C001120.jpg"},
+    {"name": "Ro Khanna", "chamber": "House", "party": "D", "initials": "RK", "image": "https://bioguide.congress.gov/photo/K000389.jpg"},
+    {"name": "Markwayne Mullin", "chamber": "Senate", "party": "R", "initials": "MM", "image": "https://bioguide.congress.gov/photo/M001190.jpg"},
+]
+
+
+@app.get("/api/politicians")
+async def get_politicians():
+    """Return a list of notable politician traders for the UI cards."""
+    return POLITICIANS
+
+
 @app.post("/chat", response_model=ChatResponse)
 async def chat(body: ChatRequest, authorization: str = Header()):
     token = _extract_token(authorization)
@@ -170,9 +187,12 @@ async def chat(body: ChatRequest, authorization: str = Header()):
     try:
         async with GhostfolioClient(base_url=GHOSTFOLIO_BASE_URL, auth_token=token) as client:
             run_config["configurable"]["client"] = client
-            result = await agent.ainvoke(
-                {"messages": messages},
-                config=run_config,
+            result = await asyncio.wait_for(
+                agent.ainvoke(
+                    {"messages": messages},
+                    config=run_config,
+                ),
+                timeout=45,
             )
     except GraphRecursionError:
         elapsed = time.monotonic() - start_time
@@ -181,6 +201,14 @@ async def chat(body: ChatRequest, authorization: str = Header()):
             content="I ran into a complexity limit while processing your request. Could you try rephrasing with a more specific question?",
             run_id=run_id,
             metrics={"error": "recursion_limit_reached", "latency_seconds": round(elapsed, 3)},
+        )
+    except asyncio.TimeoutError:
+        elapsed = time.monotonic() - start_time
+        logger.error("Agent timed out run_id=%s latency=%.2fs", run_id, elapsed)
+        return ChatResponse(
+            content="Your request timed out. Please try a simpler or more specific question.",
+            run_id=run_id,
+            metrics={"error": "request_timeout", "latency_seconds": round(elapsed, 3)},
         )
     except Exception as e:
         elapsed = time.monotonic() - start_time
@@ -292,6 +320,7 @@ async def admin_overview():
         {"name": "dividend_analysis", "description": "Dividend income tracking with date ranges", "type": "read"},
         {"name": "account_summary", "description": "Multi-account overview with balances and platforms", "type": "read"},
         {"name": "market_news", "description": "Financial news and sentiment via Alpha Vantage API", "type": "read"},
+        {"name": "congressional_trades", "description": "Recent stock trades by members of U.S. Congress via Quiver Quantitative API", "type": "read"},
         {"name": "create_order", "description": "Create buy/sell/dividend orders (requires user confirmation)", "type": "write"},
         {"name": "delete_order", "description": "Delete an existing order (requires user confirmation)", "type": "write"},
         {"name": "get_user_preferences", "description": "Read persistent user preferences (currency, risk tolerance, etc.)", "type": "read"},

@@ -33,7 +33,7 @@ dotenv.load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 DATASETS_DIR = Path(__file__).resolve().parent / "datasets"
 BASE_URL = os.environ.get("AGENT_BASE_URL", "https://agent-production-b7bc.up.railway.app")
 AUTH_TOKEN = os.environ.get("AGENT_AUTH_TOKEN", "")
-MAX_CONCURRENCY = int(os.environ.get("EVAL_MAX_CONCURRENCY", "20"))
+MAX_CONCURRENCY = int(os.environ.get("EVAL_MAX_CONCURRENCY", "5"))
 
 # ---------------------------------------------------------------------------
 # Guardrails patterns
@@ -245,7 +245,7 @@ async def call_agent(client: httpx.AsyncClient, query: str, session_id: str | No
         f"{BASE_URL}/chat",
         json=payload,
         headers=headers,
-        timeout=60,
+        timeout=90,
     )
     resp.raise_for_status()
     duration = time.monotonic() - start

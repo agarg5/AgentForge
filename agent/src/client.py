@@ -25,7 +25,7 @@ class GhostfolioClient:
         self._http = httpx.AsyncClient(
             base_url=self.base_url,
             headers={"Authorization": f"Bearer {auth_token}"},
-            timeout=30,
+            timeout=15,
         )
 
     async def _request(self, method: str, path: str, **kwargs) -> httpx.Response:
