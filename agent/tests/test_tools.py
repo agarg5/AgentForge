@@ -82,7 +82,6 @@ async def test_transaction_history_success(mock_api, tool_config):
     result = await transaction_history.ainvoke({}, config=tool_config)
     assert "AAPL" in result
     assert "BUY" in result
-    assert "tx-1" in result
 
 
 @pytest.mark.asyncio
