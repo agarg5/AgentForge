@@ -1,8 +1,18 @@
 """Tests for the ChatHistoryStore."""
 
+import base64
+import json
+
 import pytest
 
-from src.memory.chat_history import ChatHistoryStore, _chat_key
+from src.memory.chat_history import ChatHistoryStore, _chat_key, _extract_user_id
+
+
+def _make_jwt(payload: dict) -> str:
+    """Build a fake JWT (header.payload.signature) with the given payload."""
+    header = base64.urlsafe_b64encode(json.dumps({"alg": "HS256"}).encode()).rstrip(b"=").decode()
+    body = base64.urlsafe_b64encode(json.dumps(payload).encode()).rstrip(b"=").decode()
+    return f"{header}.{body}.fake-signature"
 
 
 AUTH_TOKEN = "test-token-123"
@@ -85,6 +95,27 @@ class TestChatHistoryStore:
         assert history[0]["content"] == content
 
 
+class TestExtractUserId:
+    def test_extracts_id_from_jwt(self):
+        jwt = _make_jwt({"id": "user-abc-123"})
+        assert _extract_user_id(jwt) == "user-abc-123"
+
+    def test_different_jwts_same_user_id(self):
+        """Two JWTs with the same user ID should return the same value."""
+        jwt1 = _make_jwt({"id": "user-abc-123", "iat": 1000})
+        jwt2 = _make_jwt({"id": "user-abc-123", "iat": 2000})
+        assert _extract_user_id(jwt1) == _extract_user_id(jwt2)
+
+    def test_fallback_for_non_jwt(self):
+        """Non-JWT strings should fall back to the raw value."""
+        assert _extract_user_id("plain-session-id") == "plain-session-id"
+
+    def test_fallback_for_missing_id_field(self):
+        jwt = _make_jwt({"sub": "no-id-field"})
+        # Missing 'id' key → fallback to raw token
+        assert _extract_user_id(jwt) == jwt
+
+
 class TestChatKey:
     def test_key_is_hashed(self):
         key = _chat_key("secret-token")
@@ -94,6 +125,17 @@ class TestChatKey:
     def test_key_is_deterministic(self):
         assert _chat_key("token-a") == _chat_key("token-a")
         assert _chat_key("token-a") != _chat_key("token-b")
+
+    def test_key_stable_across_jwt_reissues(self):
+        """Different JWTs for the same user should produce the same chat key."""
+        jwt1 = _make_jwt({"id": "user-xyz", "iat": 1000})
+        jwt2 = _make_jwt({"id": "user-xyz", "iat": 9999})
+        assert _chat_key(jwt1) == _chat_key(jwt2)
+
+    def test_key_differs_between_users(self):
+        jwt_a = _make_jwt({"id": "user-a"})
+        jwt_b = _make_jwt({"id": "user-b"})
+        assert _chat_key(jwt_a) != _chat_key(jwt_b)
 
     def test_key_differs_from_prefs_key(self):
         from src.memory.store import _user_key

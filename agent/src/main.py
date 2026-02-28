@@ -14,6 +14,7 @@ from langgraph.errors import GraphRecursionError
 from .agent import MAX_AGENT_STEPS, create_agent
 from .client import GhostfolioClient
 from .memory import ChatHistoryStore, MemoryStore
+from .memory.chat_history import _extract_user_id
 from .observability import TimingCallback, calculate_cost, configure_tracing, extract_metrics, get_run_config
 from .verification import verify_response
 
@@ -129,8 +130,9 @@ async def chat(body: ChatRequest, authorization: str = Header()):
     token = _extract_token(authorization)
 
     # Use session_id for chat history isolation when provided (e.g. evals),
-    # otherwise fall back to the auth token for normal chat.
-    history_key = body.session_id or token
+    # otherwise derive a stable key from the JWT's user ID so that history
+    # persists across browser refreshes (which issue new JWTs).
+    history_key = body.session_id or _extract_user_id(token)
 
     # Load persisted history if the frontend didn't send any
     messages = []
@@ -289,7 +291,8 @@ async def chat(body: ChatRequest, authorization: str = Header()):
 async def get_chat_history(authorization: str = Header()):
     """Return the stored chat history for the current user."""
     token = _extract_token(authorization)
-    history = await chat_history_store.get_history(token)
+    user_id = _extract_user_id(token)
+    history = await chat_history_store.get_history(user_id)
     return {"history": history}
 
 
@@ -297,7 +300,8 @@ async def get_chat_history(authorization: str = Header()):
 async def clear_chat_history(authorization: str = Header()):
     """Clear the stored chat history for the current user."""
     token = _extract_token(authorization)
-    await chat_history_store.clear_history(token)
+    user_id = _extract_user_id(token)
+    await chat_history_store.clear_history(user_id)
     return {"status": "ok"}
 
 
