@@ -1,10 +1,12 @@
-"""Tests for the ChatHistoryStore."""
+"""Tests for the ChatHistoryStore and pronoun context resolution."""
 
 import base64
 import json
 
 import pytest
+from langchain_core.messages import AIMessage, HumanMessage
 
+from src.main import _resolve_context
 from src.memory.chat_history import ChatHistoryStore, _chat_key, _extract_user_id
 
 
@@ -145,3 +147,73 @@ class TestChatKey:
         assert chat != prefs
         assert "chat" in chat
         assert "prefs" in prefs
+
+
+class TestResolveContext:
+    """Tests for _resolve_context pronoun resolution."""
+
+    def test_pronoun_with_politician_injects_context(self):
+        history = [
+            HumanMessage(content="Show me Nancy Pelosi's recent trades"),
+            AIMessage(content="Here are Nancy Pelosi's recent stock trades: ..."),
+        ]
+        result = _resolve_context("How does my performance compare to hers?", history)
+        assert "Nancy Pelosi" in result
+        assert "[Context:" in result
+
+    def test_no_pronoun_returns_unchanged(self):
+        history = [
+            AIMessage(content="Here are Nancy Pelosi's recent stock trades: ..."),
+        ]
+        msg = "Show me the top holdings in my portfolio"
+        result = _resolve_context(msg, history)
+        assert result == msg
+
+    def test_pronoun_without_politician_returns_unchanged(self):
+        history = [
+            HumanMessage(content="What is my portfolio worth?"),
+            AIMessage(content="Your portfolio is worth $50,000."),
+        ]
+        msg = "Can you compare it to hers?"
+        result = _resolve_context(msg, history)
+        assert result == msg
+
+    def test_multiple_politicians_uses_most_recent(self):
+        history = [
+            AIMessage(content="Here are Nancy Pelosi's recent trades."),
+            HumanMessage(content="Now show me Tommy Tuberville's trades"),
+            AIMessage(content="Here are Tommy Tuberville's recent trades."),
+        ]
+        result = _resolve_context("How does his portfolio compare to mine?", history)
+        assert "Tommy Tuberville" in result
+        assert "Nancy Pelosi" not in result
+
+    def test_word_boundary_avoids_false_positives(self):
+        """Words like 'therapist' contain 'her' but shouldn't trigger resolution."""
+        history = [
+            AIMessage(content="Here are Nancy Pelosi's recent trades."),
+        ]
+        msg = "I need a therapist after seeing these losses"
+        result = _resolve_context(msg, history)
+        assert result == msg
+
+    def test_case_insensitive_pronoun_matching(self):
+        history = [
+            AIMessage(content="Tommy Tuberville bought AAPL last week."),
+        ]
+        result = _resolve_context("What did HE buy?", history)
+        assert "Tommy Tuberville" in result
+
+    def test_empty_history_returns_unchanged(self):
+        result = _resolve_context("What about her trades?", [])
+        assert result == "What about her trades?"
+
+    def test_skips_human_messages_in_history(self):
+        """Only AI messages should be scanned for politician names."""
+        history = [
+            HumanMessage(content="Tell me about Nancy Pelosi"),
+            AIMessage(content="Sure, let me look that up for you."),
+        ]
+        # The AI message doesn't mention a politician name, only the human one does
+        result = _resolve_context("What about her trades?", history)
+        assert result == "What about her trades?"
