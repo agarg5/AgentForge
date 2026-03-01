@@ -18,6 +18,25 @@
   flex: 1;
   overflow-y: auto;
   padding: 1.5rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.35);
+    }
+  }
 }
 
 .empty-state {
@@ -615,6 +634,92 @@
   padding: 1rem 1.5rem 1.5rem;
 }
 
+.congress-panel {
+  animation: slideDown 0.2s ease-out;
+  overflow: hidden;
+
+  .politician-cards-row {
+    gap: 0.5rem;
+  }
+
+  .politician-card {
+    width: 5.5rem;
+    padding: 0.4rem 0.5rem;
+  }
+
+  .politician-avatar {
+    height: 2rem;
+    width: 2rem;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    max-height: 0;
+    opacity: 0;
+  }
+
+  to {
+    max-height: 200px;
+    opacity: 1;
+  }
+}
+
+.chat-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.congress-toggle-button {
+  align-items: center;
+  background: transparent;
+  border: none;
+  border-radius: 0.5rem;
+  color: rgba(
+    var(--palette-foreground-secondary-text),
+    var(--palette-foreground-secondary-text-alpha)
+  );
+  cursor: pointer;
+  display: flex;
+  font-size: 0.8rem;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(
+      var(--palette-background-hover),
+      var(--palette-background-hover-alpha, 0.04)
+    );
+    color: rgba(
+      var(--palette-foreground-text),
+      var(--palette-foreground-text-alpha)
+    );
+  }
+
+  &.active {
+    color: rgba(var(--palette-primary-500), 1);
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.4;
+  }
+
+  mat-icon {
+    font-size: 1rem;
+    height: 1rem;
+    width: 1rem;
+  }
+
+  .expand-icon {
+    font-size: 0.875rem;
+    height: 0.875rem;
+    width: 0.875rem;
+  }
+}
+
 .clear-chat-button {
   align-items: center;
   background: transparent;
@@ -839,6 +944,24 @@
       var(--palette-foreground-secondary-text-dark),
       var(--palette-foreground-secondary-text-dark-alpha)
     );
+  }
+
+  .congress-toggle-button {
+    color: rgba(
+      var(--palette-foreground-secondary-text-dark),
+      var(--palette-foreground-secondary-text-dark-alpha)
+    );
+
+    &:hover {
+      background: rgba(
+        var(--palette-background-hover-dark),
+        var(--palette-background-hover-dark-alpha, 0.04)
+      );
+      color: rgba(
+        var(--palette-foreground-text-dark),
+        var(--palette-foreground-text-dark-alpha)
+      );
+    }
   }
 
   .clear-chat-button {
