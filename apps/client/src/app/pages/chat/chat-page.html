@@ -201,16 +201,59 @@
     }
   </div>
   <div class="input-area">
+    @if (messages.length > 0 && politicians.length) {
+      @if (showCongressPanel) {
+        <div class="congress-panel">
+          <div class="politician-cards-row">
+            @for (politician of politicians; track politician.name) {
+              <button
+                class="politician-card"
+                [matTooltip]="politician.name + ' (' + politician.chamber + ')'"
+                (click)="onPoliticianClick(politician)"
+              >
+                <div
+                  class="politician-avatar"
+                  [class.party-d]="politician.party === 'D'"
+                  [class.party-r]="politician.party === 'R'"
+                >
+                  <img
+                    [src]="politician.image"
+                    [alt]="politician.name"
+                    class="politician-photo"
+                    referrerpolicy="no-referrer"
+                  />
+                </div>
+                <span class="politician-name">{{ politician.name }}</span>
+              </button>
+            }
+          </div>
+        </div>
+      }
+    }
     @if (messages.length > 0) {
-      <button
-        class="clear-chat-button"
-        i18n
-        [disabled]="isLoading"
-        (click)="onClearChat()"
-      >
-        <mat-icon>delete_outline</mat-icon>
-        Clear Chat
-      </button>
+      <div class="chat-actions">
+        @if (politicians.length) {
+          <button
+            class="congress-toggle-button"
+            [class.active]="showCongressPanel"
+            [disabled]="isLoading"
+            (click)="showCongressPanel = !showCongressPanel"
+          >
+            <mat-icon>account_balance</mat-icon>
+            Congress
+            <mat-icon class="expand-icon">{{ showCongressPanel ? 'expand_more' : 'expand_less' }}</mat-icon>
+          </button>
+        }
+        <button
+          class="clear-chat-button"
+          i18n
+          [disabled]="isLoading"
+          (click)="onClearChat()"
+        >
+          <mat-icon>delete_outline</mat-icon>
+          Clear Chat
+        </button>
+      </div>
     }
     <div class="input-wrapper">
       <input
