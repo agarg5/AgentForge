@@ -69,6 +69,7 @@ export class GfChatPageComponent implements AfterViewChecked, OnInit {
   public messageInput = '';
   public messages: ChatMessage[] = [];
   public politicians: Politician[] = [];
+  public showCongressPanel = false;
 
   private shouldScrollToBottom = false;
 

@@ -9,6 +9,7 @@ Each key has a 7-day TTL so old conversations are automatically cleaned up.
 
 from __future__ import annotations
 
+import base64
 import hashlib
 import json
 import logging
@@ -18,9 +19,28 @@ logger = logging.getLogger("agentforge.memory.chat_history")
 CHAT_TTL_SECONDS = 7 * 24 * 60 * 60
 
 
+def _extract_user_id(auth_token: str) -> str:
+    """Extract stable user ID from Ghostfolio JWT payload.
+
+    Ghostfolio issues a new JWT on every login, but the payload always
+    contains the same ``id`` field for a given user.  We decode without
+    verification (Ghostfolio already validated the token).
+    """
+    try:
+        payload_part = auth_token.split(".")[1]
+        # Add padding for base64url
+        padded = payload_part + "=" * (-len(payload_part) % 4)
+        payload = json.loads(base64.urlsafe_b64decode(padded))
+        return payload["id"]
+    except Exception:
+        # Fallback to raw token if decode fails (e.g. non-JWT session ids)
+        return auth_token
+
+
 def _chat_key(auth_token: str) -> str:
-    """Hash the auth token to create a stable, non-reversible chat history key."""
-    return f"agentforge:chat:{hashlib.sha256(auth_token.encode()).hexdigest()[:16]}"
+    """Hash the user ID (from the JWT) to create a stable, non-reversible chat history key."""
+    user_id = _extract_user_id(auth_token)
+    return f"agentforge:chat:{hashlib.sha256(user_id.encode()).hexdigest()[:16]}"
 
 
 class ChatHistoryStore:
