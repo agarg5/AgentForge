@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import os
+import re
 import time
 from typing import Optional
 
@@ -14,6 +15,7 @@ from langgraph.errors import GraphRecursionError
 from .agent import MAX_AGENT_STEPS, create_agent
 from .client import GhostfolioClient
 from .memory import ChatHistoryStore, MemoryStore
+from .memory.chat_history import _extract_user_id
 from .observability import TimingCallback, calculate_cost, configure_tracing, extract_metrics, get_run_config
 from .verification import verify_response
 
@@ -124,13 +126,59 @@ async def get_politicians():
     return POLITICIANS
 
 
+# Pronouns that may refer to a previously mentioned politician.
+# Word-boundary matching avoids false positives (e.g. "therapist" contains "her").
+_PRONOUN_PATTERN = re.compile(
+    r"\b(?:her|hers|his|their|them|theirs|she|he)\b", re.IGNORECASE
+)
+
+# Pre-compile politician name patterns for efficient scanning.
+_POLITICIAN_NAMES = [p["name"] for p in POLITICIANS]
+
+
+def _resolve_context(
+    user_message: str, history_messages: list
+) -> str:
+    """Inject an explicit context note when the user's message contains pronouns.
+
+    Scans the last few AI messages in *history_messages* for politician names
+    from the ``POLITICIANS`` list.  If a match is found, appends a bracketed
+    note so that the LLM resolves the pronoun correctly.
+
+    Returns the (possibly enriched) user message text.
+    """
+    if not _PRONOUN_PATTERN.search(user_message):
+        return user_message
+
+    # Walk history in reverse to find the most recently mentioned politician.
+    # Only inspect AI/assistant messages (they contain the tool-generated text
+    # about politicians).  Look at the last 4 AI messages at most.
+    ai_messages_checked = 0
+    for msg in reversed(history_messages):
+        if not isinstance(msg, AIMessage):
+            continue
+        ai_messages_checked += 1
+        if ai_messages_checked > 4:
+            break
+        content = msg.content if isinstance(msg.content, str) else ""
+        for name in _POLITICIAN_NAMES:
+            if name.lower() in content.lower():
+                return (
+                    f"{user_message}\n\n"
+                    f'[Context: the pronoun refers to {name} from the previous discussion]'
+                )
+
+    return user_message
+
+
 @app.post("/chat", response_model=ChatResponse)
 async def chat(body: ChatRequest, authorization: str = Header()):
     token = _extract_token(authorization)
 
     # Use session_id for chat history isolation when provided (e.g. evals),
-    # otherwise fall back to the auth token for normal chat.
-    history_key = body.session_id or token
+    # otherwise derive a stable key from the JWT's user ID so that history
+    # persists across browser refreshes (which issue new JWTs).
+    history_key = body.session_id or _extract_user_id(token)
 
     # Load persisted history if the frontend didn't send any
     messages = []
@@ -148,7 +196,10 @@ async def chat(body: ChatRequest, authorization: str = Header()):
             elif msg["role"] in ("agent", "assistant"):
                 messages.append(AIMessage(content=msg["content"]))
 
-    messages.append(HumanMessage(content=body.message))
+    # Resolve pronouns to previously mentioned politicians before the agent
+    # sees the message.  The *original* message is stored in chat history later.
+    enriched_message = _resolve_context(body.message, messages)
+    messages.append(HumanMessage(content=enriched_message))
 
     # Sliding window: keep only recent messages to manage context size
     total_before = len(messages)
@@ -289,7 +340,8 @@ async def chat(body: ChatRequest, authorization: str = Header()):
 async def get_chat_history(authorization: str = Header()):
     """Return the stored chat history for the current user."""
     token = _extract_token(authorization)
-    history = await chat_history_store.get_history(token)
+    user_id = _extract_user_id(token)
+    history = await chat_history_store.get_history(user_id)
     return {"history": history}
 
 
@@ -297,7 +349,8 @@ async def get_chat_history(authorization: str = Header()):
 async def clear_chat_history(authorization: str = Header()):
     """Clear the stored chat history for the current user."""
     token = _extract_token(authorization)
-    await chat_history_store.clear_history(token)
+    user_id = _extract_user_id(token)
+    await chat_history_store.clear_history(user_id)
     return {"status": "ok"}
 
 
