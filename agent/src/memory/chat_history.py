@@ -65,6 +65,8 @@ class ChatHistoryStore:
 
         if self._redis:
             try:
+                # Replay any buffered fallback messages first
+                await self._flush_fallback(key)
                 await self._redis.rpush(key, message)
                 await self._redis.expire(key, CHAT_TTL_SECONDS)
                 return
@@ -79,6 +81,8 @@ class ChatHistoryStore:
 
         if self._redis:
             try:
+                # Replay any buffered fallback messages first
+                await self._flush_fallback(key)
                 raw_messages = await self._redis.lrange(key, 0, -1)
                 # Refresh TTL on read
                 if raw_messages:
@@ -92,15 +96,31 @@ class ChatHistoryStore:
 
         return list(self._fallback.get(key, []))
 
+    async def _flush_fallback(self, key: str) -> None:
+        """Replay buffered in-memory messages to Redis and clear the buffer."""
+        pending = self._fallback.pop(key, None)
+        if not pending:
+            return
+        try:
+            pipe = self._redis.pipeline()
+            for msg in pending:
+                pipe.rpush(key, json.dumps(msg))
+            pipe.expire(key, CHAT_TTL_SECONDS)
+            await pipe.execute()
+            logger.info("Flushed %d buffered messages to Redis for %s", len(pending), key)
+        except Exception as e:
+            # Put them back so they aren't lost
+            self._fallback[key] = pending + self._fallback.get(key, [])
+            logger.warning("Failed to flush fallback to Redis: %s", e)
+
     async def clear_history(self, auth_token: str) -> None:
         """Clear the entire chat history for a user."""
         key = _chat_key(auth_token)
+        # Always clear fallback buffer
+        self._fallback.pop(key, None)
 
         if self._redis:
             try:
                 await self._redis.delete(key)
-                return
             except Exception as e:
-                logger.warning("Redis clear_history failed, using fallback: %s", e)
-
-        self._fallback.pop(key, None)
+                logger.warning("Redis clear_history failed: %s", e)
